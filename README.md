@@ -37,5 +37,13 @@ git clone git://github.com/mcallegari/3dvisualizer.git
 
 cd 3dvisualizer<br>
 qmake<br>
-make 
+make<br>
 make install
+
+Post-install manual stuff
+============
+Manually copy the following DLLs into the output folder:
+
+Assimp32.dll<br>
+glew32.dll<br>
+libglut-0.dll
