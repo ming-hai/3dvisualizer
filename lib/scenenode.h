@@ -1,5 +1,5 @@
 /*
-  Q Light Controller
+  Q Light Controller Plus
   scenenode.h
 
   Copyright (C) Massimo Callegari

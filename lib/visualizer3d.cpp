@@ -1,5 +1,5 @@
 /*
-  Q Light Controller
+  Q Light Controller Plus
   visualizer3d.cpp
 
   Copyright (C) Massimo Callegari

@@ -1,5 +1,5 @@
 /*
-  Q Light Controller
+  Q Light Controller Plus
   sceneviewer.h
 
   Copyright (C) Massimo Callegari
