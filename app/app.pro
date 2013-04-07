@@ -11,7 +11,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = 3DVisualizer
 TEMPLATE = app
 INCLUDEPATH += ../lib
-LIBS        += -L../lib/release -lqlcplus3dvisualizer
+LIBS        += -L../lib -L../lib/release -lqlcplus3dvisualizer
 
 win32 {
     ASSIMP_DIR = C:/Qt/Assimp
@@ -26,7 +26,7 @@ win32 {
     {
         PKGCONFIG += assimp
     }
-    LIBS    += -lGLEW
+    LIBS    += -lGLEW -lGLU -lglut
 }
 
 SOURCES += main.cpp

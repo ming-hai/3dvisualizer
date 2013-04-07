@@ -29,7 +29,7 @@ Visualizer3D::Visualizer3D(QWidget *parent)
     : QWidget(parent)
     , m_splitter(NULL)
 {
-    resize(500,500);
+    resize(640,480);
     new QHBoxLayout(this);
     layout()->setContentsMargins(0, 0, 0, 0);
     layout()->setSpacing(0);

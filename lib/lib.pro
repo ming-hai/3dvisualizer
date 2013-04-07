@@ -23,7 +23,7 @@ win32 {
     {
         PKGCONFIG += assimp
     }
-    LIBS    += -lGLEW
+    LIBS    += -lGLEW -lGLU -lglut
 }
 #############################################################################
 # Sources
