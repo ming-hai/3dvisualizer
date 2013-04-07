@@ -12,9 +12,10 @@ http://releases.qt-project.org/qt4/source/
 and install it in C:\Qt
 
 Make sure your environment variables are set as follows:
-QMAKESPEC = win32-g++
-QTDIR = C:\Qt\4.8.4
-PATH = ....;C:\Qt\4.8.4\bin;C:\Qt\4.8.4;C:\MinGW\bin
+
+QMAKESPEC = win32-g++ 
+QTDIR = C:\Qt\4.8.4 
+PATH = ....;C:\Qt\4.8.4\bin;C:\Qt\4.8.4;C:\MinGW\bin 
 
 Download and install latest version of assimp library:
 http://sourceforge.net/projects/assimp/files/
@@ -34,8 +35,7 @@ Clone, compile and install
 ============
 git clone git://github.com/mcallegari/3dvisualizer.git
 
-qmake
-
-make
-
+cd 3dvisualizer 
+qmake 
+make 
 make install
