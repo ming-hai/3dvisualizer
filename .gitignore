@@ -1,0 +1,28 @@
+# QT
+*.pro.user
+*.pro.user.*
+moc_*.cpp
+qrc_*.cpp
+Makefile
+Makefile.*
+*-build-*
+ui_*
+object_*
+*.qm
+
+# Linux
+*.so
+*.o
+
+# Windows
+Thumbs.db
+*.exe
+*.dll
+*.a
+Desktop.ini
+
+# Mac crap
+.DS_Store
+
+# Binaries
+3dvisualizer
