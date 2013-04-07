@@ -1,0 +1,406 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ObjectsEditor</class>
+ <widget class="QWidget" name="ObjectsEditor">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>276</width>
+    <height>556</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_2">
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QToolButton" name="m_addButton">
+         <property name="text">
+          <string>Add</string>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>24</width>
+           <height>24</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="m_removeButton">
+         <property name="text">
+          <string>Remove</string>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>24</width>
+           <height>24</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="m_editButton">
+         <property name="text">
+          <string>Edit</string>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>24</width>
+           <height>24</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QTreeWidget" name="m_objectsTree">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="lineWidth">
+        <number>2</number>
+       </property>
+       <property name="midLineWidth">
+        <number>1</number>
+       </property>
+       <column>
+        <property name="text">
+         <string>Objects</string>
+        </property>
+       </column>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolBox" name="m_propsToolBox">
+       <property name="frameShape">
+        <enum>QFrame::StyledPanel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Sunken</enum>
+       </property>
+       <property name="currentIndex">
+        <number>1</number>
+       </property>
+       <widget class="QWidget" name="m_fixmodPage">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>254</width>
+          <height>190</height>
+         </rect>
+        </property>
+        <attribute name="label">
+         <string>Fixture &amp;&amp; Model</string>
+        </attribute>
+        <widget class="QWidget" name="layoutWidget">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>0</y>
+           <width>208</width>
+           <height>51</height>
+          </rect>
+         </property>
+         <layout class="QGridLayout" name="gridLayout">
+          <item row="1" column="1">
+           <widget class="QLabel" name="m_modelNameLabel">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="m_fixtureLabel">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Fixture name:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="m_modelLabel">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Model Name:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="m_modelNameEdit"/>
+          </item>
+         </layout>
+        </widget>
+       </widget>
+       <widget class="QWidget" name="m_geoposPage">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>254</width>
+          <height>195</height>
+         </rect>
+        </property>
+        <attribute name="label">
+         <string>Geometry &amp;&amp; Position</string>
+        </attribute>
+        <widget class="QWidget" name="gridLayoutWidget">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>0</y>
+           <width>208</width>
+           <height>181</height>
+          </rect>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_2">
+          <item row="1" column="0">
+           <widget class="QLabel" name="m_yposLabel">
+            <property name="text">
+             <string>Y position</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="m_xrotationLabel">
+            <property name="text">
+             <string>X Rotation</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="m_zposLabel">
+            <property name="text">
+             <string>Z Position</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0" colspan="2">
+           <widget class="Line" name="line">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="m_xposLabel">
+            <property name="text">
+             <string>X Position</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="m_yrotationLabel">
+            <property name="text">
+             <string>Y Rotation</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="0">
+           <widget class="QLabel" name="m_zrotationLabel">
+            <property name="text">
+             <string>Z Rotation</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QDoubleSpinBox" name="m_xposSpin">
+            <property name="minimum">
+             <double>-99.989999999999995</double>
+            </property>
+            <property name="singleStep">
+             <double>0.500000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QDoubleSpinBox" name="m_yposSpin">
+            <property name="minimum">
+             <double>-99.989999999999995</double>
+            </property>
+            <property name="singleStep">
+             <double>0.500000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QDoubleSpinBox" name="m_zposSpin">
+            <property name="minimum">
+             <double>-99.989999999999995</double>
+            </property>
+            <property name="singleStep">
+             <double>0.500000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QDoubleSpinBox" name="m_xrotationSpin">
+            <property name="minimum">
+             <double>0.000000000000000</double>
+            </property>
+            <property name="maximum">
+             <double>360.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QDoubleSpinBox" name="m_yrotationSpin">
+            <property name="minimum">
+             <double>0.000000000000000</double>
+            </property>
+            <property name="maximum">
+             <double>360.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="QDoubleSpinBox" name="m_zrotationSpin">
+            <property name="maximum">
+             <double>360.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </widget>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>m_addButton</sender>
+   <signal>clicked()</signal>
+   <receiver>ObjectsEditor</receiver>
+   <slot>slotAddModel()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>44</x>
+     <y>38</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>124</x>
+     <y>249</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>m_xposSpin</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>ObjectsEditor</receiver>
+   <slot>slotXpositionChanged(double)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>156</x>
+     <y>379</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>150</x>
+     <y>790</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>m_yposSpin</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>ObjectsEditor</receiver>
+   <slot>slotYpositionChanged(double)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>183</x>
+     <y>403</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>27</x>
+     <y>758</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>m_zposSpin</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>ObjectsEditor</receiver>
+   <slot>slotZpositionChanged(double)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>203</x>
+     <y>433</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>39</x>
+     <y>772</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>m_removeButton</sender>
+   <signal>clicked()</signal>
+   <receiver>ObjectsEditor</receiver>
+   <slot>slotDeleteModel()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>73</x>
+     <y>33</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>43</x>
+     <y>802</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>slotXpositionChanged(double)</slot>
+  <slot>slotYpositionChanged(double)</slot>
+  <slot>slotZpositionChanged(double)</slot>
+  <slot>slotDeleteModel()</slot>
+ </slots>
+</ui>
