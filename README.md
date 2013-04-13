@@ -6,6 +6,7 @@ Environment setup
 Download MinGW installer here:<br>
 http://sourceforge.net/projects/mingw/files/Installer/mingw-get-inst/<br>
 and install both MinGW and MSYS in the default path proposed by the installer.<br>
+If asked, remember to include g++ (c++ compiler) in the installation.<br>
 
 Get latest Qt prebuilt for MinGW32 here:<br>
 http://releases.qt-project.org/qt4/source/<br>
