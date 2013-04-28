@@ -86,8 +86,6 @@ protected:
     quint32 m_latestNodeId;
 
 protected:
-    void apply_material(const aiMaterial *mtl);
-    void recursive_render (const struct aiScene *sc, const struct aiNode* nd);
 
     /** @reimp */
     void initializeGL();
@@ -100,6 +98,9 @@ protected:
 
     /** @reimp */
     void wheelEvent(QWheelEvent *event);
+
+    const char *fileToBuffer(QString filename);
+    GLuint vao, vbo[2]; /* Create handles for our Vertex Array Object and two Vertex Buffer Objects */
 
     GLuint m_scene_list;
     GLRenderer *m_renderer;

@@ -222,7 +222,8 @@ void SceneNode::draw(const struct aiNode* nd)
     glMultMatrixf((float*)&m);
 
     // draw all meshes assigned to this node
-    for (; n < nd->mNumMeshes; ++n) {
+    for (; n < nd->mNumMeshes; ++n)
+    {
         const struct aiMesh* mesh = m_scene->mMeshes[nd->mMeshes[n]];
 
         apply_material(m_scene->mMaterials[mesh->mMaterialIndex]);
@@ -233,11 +234,13 @@ void SceneNode::draw(const struct aiNode* nd)
             glEnable(GL_LIGHTING);
         }
 
-        for (t = 0; t < mesh->mNumFaces; ++t) {
+        for (t = 0; t < mesh->mNumFaces; ++t)
+        {
             const struct aiFace* face = &mesh->mFaces[t];
             GLenum face_mode;
 
-            switch(face->mNumIndices) {
+            switch(face->mNumIndices)
+            {
                 case 1: face_mode = GL_POINTS; break;
                 case 2: face_mode = GL_LINES; break;
                 case 3: face_mode = GL_TRIANGLES; break;
@@ -264,9 +267,8 @@ void SceneNode::draw(const struct aiNode* nd)
     }
 
     // draw all children
-    for (n = 0; n < nd->mNumChildren; ++n) {
+    for (n = 0; n < nd->mNumChildren; ++n)
         draw(nd->mChildren[n]);
-    }
 
     glPopMatrix();
 }

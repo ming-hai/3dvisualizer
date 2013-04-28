@@ -44,12 +44,14 @@ SceneViewer::SceneViewer(QWidget *parent)
     glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
 
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    /*
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
     glEnable(GL_DEPTH_TEST);
 
-    //glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
     glEnable(GL_NORMALIZE);
+    */
+    //glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
     //glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);
 
     qDebug() << "Vendor: " << glGetString (GL_VENDOR);
@@ -134,26 +136,204 @@ QList <SceneNode*> SceneViewer::nodes() const
 
 // ********************************* OPENGL reimplemented methods *********************************
 
+const char *SceneViewer::fileToBuffer(QString filename)
+{
+    QFile file(filename);
+    QString content;
+    if (file.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        QTextStream in(&file);
+        content = in.readAll();
+        return content.toStdString().c_str();
+    }
+
+    return NULL;
+}
+
 void SceneViewer::initializeGL()
 {
-    //qDebug() << Q_FUNC_INFO;
+    qDebug() << Q_FUNC_INFO;
+    int IsCompiled_VS, IsCompiled_FS;
+    int IsLinked;
+    int maxLength;
+    char *vertexInfoLog;
+    char *fragmentInfoLog;
+    char *shaderProgramInfoLog;
+
+    /* We're going to create a simple diamond made from lines */
+    const GLfloat diamond[4][2] = {
+    {  0.0,  1.0  }, /* Top point */
+    {  1.0,  0.0  }, /* Right point */
+    {  0.0, -1.0  }, /* Bottom point */
+    { -1.0,  0.0  } }; /* Left point */
+
+    /* These pointers will receive the contents of our shader source code files */
+    const GLchar *vertexsource, *fragmentsource;
+
+    /* These are handles used to reference the shaders */
+    GLuint vertexshader, fragmentshader;
+
+    /* This is a handle to the shader program */
+    GLuint shaderprogram;
+
+    //glewExperimental = GL_TRUE;
+    glewInit();
+
+    /* Allocate and assign a Vertex Array Object to our handle */
+    glGenVertexArrays(1, &vao);
+
+    /* Bind our Vertex Array Object as the current used object */
+    glBindVertexArray(vao);
+
+    /* Allocate and assign two Vertex Buffer Objects to our handle */
+    glGenBuffers(1, vbo);
+
+    /* Bind our first VBO as being the active buffer and storing vertex attributes (coordinates) */
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
+
+    /* Copy the vertex data from diamond to our buffer */
+    /* 8 * sizeof(GLfloat) is the size of the diamond array, since it contains 8 GLfloat values */
+    glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(GLfloat), diamond, GL_STATIC_DRAW);
+
+    /* Specify that our coordinate data is going into attribute index 0, and contains two floats per vertex */
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+    /* Enable attribute index 0 as being used */
+    glEnableVertexAttribArray(0);
+
+    /* Read our shaders into the appropriate buffers */
+    vertexsource = fileToBuffer("output/tutorial2.vert");
+    if (vertexsource == NULL)
+        qDebug() << "Vertex shader not found !";
+    fragmentsource = fileToBuffer("output/tutorial2.frag");
+    if (fragmentsource == NULL)
+        qDebug() << "Fragment shader not found !";
+
+    /* Create an empty vertex shader handle */
+    vertexshader = glCreateShader(GL_VERTEX_SHADER);
+
+    /* Send the vertex shader source code to GL */
+    /* Note that the source code is NULL character terminated. */
+    /* GL will automatically detect that therefore the length info can be 0 in this case (the last parameter) */
+    glShaderSource(vertexshader, 1, (const GLchar**)&vertexsource, 0);
+
+    /* Compile the vertex shader */
+    glCompileShader(vertexshader);
+
+    glGetShaderiv(vertexshader, GL_COMPILE_STATUS, &IsCompiled_VS);
+    if(IsCompiled_VS == FALSE)
+    {
+       glGetShaderiv(vertexshader, GL_INFO_LOG_LENGTH, &maxLength);
+
+       /* The maxLength includes the NULL character */
+       vertexInfoLog = (char *)malloc(maxLength);
+
+       glGetShaderInfoLog(vertexshader, maxLength, &maxLength, vertexInfoLog);
+
+       /* Handle the error in an appropriate way such as displaying a message or writing to a log file. */
+       /* In this simple program, we'll just leave */
+       free(vertexInfoLog);
+       return;
+    }
+
+    /* Create an empty fragment shader handle */
+    fragmentshader = glCreateShader(GL_FRAGMENT_SHADER);
+
+    /* Send the fragment shader source code to GL */
+    /* Note that the source code is NULL character terminated. */
+    /* GL will automatically detect that therefore the length info can be 0 in this case (the last parameter) */
+    glShaderSource(fragmentshader, 1, (const GLchar**)&fragmentsource, 0);
+
+    /* Compile the fragment shader */
+    glCompileShader(fragmentshader);
+
+    glGetShaderiv(fragmentshader, GL_COMPILE_STATUS, &IsCompiled_FS);
+    if(IsCompiled_FS == FALSE)
+    {
+       glGetShaderiv(fragmentshader, GL_INFO_LOG_LENGTH, &maxLength);
+
+       /* The maxLength includes the NULL character */
+       fragmentInfoLog = (char *)malloc(maxLength);
+
+       glGetShaderInfoLog(fragmentshader, maxLength, &maxLength, fragmentInfoLog);
+
+       /* Handle the error in an appropriate way such as displaying a message or writing to a log file. */
+       /* In this simple program, we'll just leave */
+       free(fragmentInfoLog);
+       return;
+    }
+
+    /* If we reached this point it means the vertex and fragment shaders compiled and are syntax error free. */
+    /* We must link them together to make a GL shader program */
+    /* GL shader programs are monolithic. It is a single piece made of 1 vertex shader and 1 fragment shader. */
+    /* Assign our program handle a "name" */
+    shaderprogram = glCreateProgram();
+
+    /* Attach our shaders to our program */
+    glAttachShader(shaderprogram, vertexshader);
+    glAttachShader(shaderprogram, fragmentshader);
+
+    /* Bind attribute index 0 (coordinates) to in_Position and attribute index 1 (color) to in_Color */
+    /* Attribute locations must be setup before calling glLinkProgram. */
+    glBindAttribLocation(shaderprogram, 0, "in_Position");
+    glBindAttribLocation(shaderprogram, 1, "in_Color");
+
+    /* Link our program */
+    /* At this stage, the vertex and fragment programs are inspected, optimized and a binary code is generated for the shader. */
+    /* The binary code is uploaded to the GPU, if there is no error. */
+    glLinkProgram(shaderprogram);
+
+    /* Again, we must check and make sure that it linked. If it fails, it would mean either there is a mismatch between the vertex */
+    /* and fragment shaders. It might be that you have surpassed your GPU's abilities. Perhaps too many ALU operations or */
+    /* too many texel fetch instructions or too many interpolators or dynamic loops. */
+
+    glGetProgramiv(shaderprogram, GL_LINK_STATUS, (int *)&IsLinked);
+    if(IsLinked == FALSE)
+    {
+       /* Noticed that glGetProgramiv is used to get the length for a shader program, not glGetShaderiv. */
+       glGetProgramiv(shaderprogram, GL_INFO_LOG_LENGTH, &maxLength);
+
+       /* The maxLength includes the NULL character */
+       shaderProgramInfoLog = (char *)malloc(maxLength);
+
+       /* Notice that glGetProgramInfoLog, not glGetShaderInfoLog. */
+       glGetProgramInfoLog(shaderprogram, maxLength, &maxLength, shaderProgramInfoLog);
+
+       /* Handle the error in an appropriate way such as displaying a message or writing to a log file. */
+       /* In this simple program, we'll just leave */
+       free(shaderProgramInfoLog);
+       return;
+    }
+
+    /* Load the shader into the rendering pipeline */
+    glUseProgram(shaderprogram);
 }
 
 void SceneViewer::resizeGL(int width, int height)
 {
+    Q_UNUSED(width)
+    Q_UNUSED(height)
     //qDebug() << Q_FUNC_INFO;
-
+/*
     const double aspectRatio = (float) width / height, fieldOfView = 45.0;
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(fieldOfView, aspectRatio, 0.0, 2000.0);  /* Znear and Zfar */
+    gluPerspective(fieldOfView, aspectRatio, 0.0, 2000.0);  // Znear and Zfar
     glViewport(0, 0, width, height);
+*/
 }
 
 void SceneViewer::paintGL()
 {
+    /* Make our background black */
+    glClearColor(0.0, 0.0, 0.0, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT);
 
+    /* Invoke glDrawArrays telling that our data is a line loop and we want to draw 2-4 vertexes */
+    glDrawArrays(GL_LINE_LOOP, 0, 4);
+
+/*
     //qDebug() << Q_FUNC_INFO;
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -195,8 +375,11 @@ void SceneViewer::paintGL()
         }
         glCallList(m_sceneList);
     }
+*/
+
 
 /*
+    // CUBE for dummies
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glColor3f (1.0, 1.0, 1.0);
