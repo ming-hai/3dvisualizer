@@ -24,6 +24,9 @@
 
 #include <QObject>
 
+#include "GL/glew.h"
+#include "GL/glut.h"
+
 #include <assimp/cimport.h>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -71,6 +74,9 @@ public:
     float getScale();
 
     aiVector3D getSceneCenter();
+
+    void apply_material(const struct aiMaterial *mtl);
+    void draw (const struct aiNode* nd = NULL);
 
 protected:
     void getBoundingBoxForNode (const aiNode* nd, aiVector3D* min, aiVector3D* max, aiMatrix4x4* trafo);

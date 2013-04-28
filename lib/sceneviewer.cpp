@@ -23,6 +23,7 @@
 
 #include <QDebug>
 #include <QMessageBox>
+#include <QtGui>
 
 SceneViewer::SceneViewer(QWidget *parent)
     : QGLWidget(parent)
@@ -35,7 +36,7 @@ SceneViewer::SceneViewer(QWidget *parent)
 
     m_cameraX = 0;
     m_cameraY = 0;
-    m_cameraZ = 5;
+    m_cameraZ = 2.0f;
 
     m_angle = 0.f;
     m_sceneList = 0;
@@ -131,13 +132,11 @@ QList <SceneNode*> SceneViewer::nodes() const
     return m_nodes.values();
 }
 
-// ********************************* OPENGL reimplementedn methods *********************************
+// ********************************* OPENGL reimplemented methods *********************************
 
 void SceneViewer::initializeGL()
 {
     //qDebug() << Q_FUNC_INFO;
-
-
 }
 
 void SceneViewer::resizeGL(int width, int height)
@@ -150,132 +149,6 @@ void SceneViewer::resizeGL(int width, int height)
     glLoadIdentity();
     gluPerspective(fieldOfView, aspectRatio, 0.0, 2000.0);  /* Znear and Zfar */
     glViewport(0, 0, width, height);
-
-}
-
-// ----------------------------------------------------------------------------
-void SceneViewer::apply_material(const struct aiMaterial *mtl)
-{
-    float c[4];
-
-    GLenum fill_mode;
-    int ret1, ret2;
-    aiColor4D diffuse;
-    aiColor4D specular;
-    aiColor4D ambient;
-    aiColor4D emission;
-    float shininess, strength;
-    int two_sided;
-    int wireframe;
-    unsigned int max;
-
-    m_renderer->set_float4(c, 0.8f, 0.8f, 0.8f, 1.0f);
-    if(AI_SUCCESS == aiGetMaterialColor(mtl, AI_MATKEY_COLOR_DIFFUSE, &diffuse))
-        m_renderer->color4_to_float4(&diffuse, c);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, c);
-
-    m_renderer->set_float4(c, 0.0f, 0.0f, 0.0f, 1.0f);
-    if(AI_SUCCESS == aiGetMaterialColor(mtl, AI_MATKEY_COLOR_SPECULAR, &specular))
-        m_renderer->color4_to_float4(&specular, c);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, c);
-
-    m_renderer->set_float4(c, 0.2f, 0.2f, 0.2f, 1.0f);
-    if(AI_SUCCESS == aiGetMaterialColor(mtl, AI_MATKEY_COLOR_AMBIENT, &ambient))
-        m_renderer->color4_to_float4(&ambient, c);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, c);
-
-    m_renderer->set_float4(c, 0.0f, 0.0f, 0.0f, 1.0f);
-    if(AI_SUCCESS == aiGetMaterialColor(mtl, AI_MATKEY_COLOR_EMISSIVE, &emission))
-        m_renderer->color4_to_float4(&emission, c);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, c);
-
-    max = 1;
-    ret1 = aiGetMaterialFloatArray(mtl, AI_MATKEY_SHININESS, &shininess, &max);
-    if(ret1 == AI_SUCCESS) {
-        max = 1;
-        ret2 = aiGetMaterialFloatArray(mtl, AI_MATKEY_SHININESS_STRENGTH, &strength, &max);
-        if(ret2 == AI_SUCCESS)
-            glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shininess * strength);
-        else
-            glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
-    }
-    else {
-        glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 0.0f);
-        m_renderer->set_float4(c, 0.0f, 0.0f, 0.0f, 0.0f);
-        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, c);
-    }
-
-    max = 1;
-    if(AI_SUCCESS == aiGetMaterialIntegerArray(mtl, AI_MATKEY_ENABLE_WIREFRAME, &wireframe, &max))
-        fill_mode = wireframe ? GL_LINE : GL_FILL;
-    else
-        fill_mode = GL_FILL;
-    glPolygonMode(GL_FRONT_AND_BACK, fill_mode);
-
-    max = 1;
-    if((AI_SUCCESS == aiGetMaterialIntegerArray(mtl, AI_MATKEY_TWOSIDED, &two_sided, &max)) && two_sided)
-        glDisable(GL_CULL_FACE);
-    else
-        glEnable(GL_CULL_FACE);
-}
-
-void SceneViewer::recursive_render (const struct aiScene *sc, const struct aiNode* nd)
-{
-    unsigned int i;
-    unsigned int n = 0, t;
-    aiMatrix4x4 m = nd->mTransformation;
-
-    // update transform
-    //aiTransposeMatrix4(&m); <-- AssImp 3.0 ??
-    m.Transpose();
-    glPushMatrix();
-    glMultMatrixf((float*)&m);
-
-    // draw all meshes assigned to this node
-    for (; n < nd->mNumMeshes; ++n) {
-        const struct aiMesh* mesh = sc->mMeshes[nd->mMeshes[n]];
-
-        apply_material(sc->mMaterials[mesh->mMaterialIndex]);
-
-        if(mesh->mNormals == NULL) {
-            glDisable(GL_LIGHTING);
-        } else {
-            glEnable(GL_LIGHTING);
-        }
-
-        for (t = 0; t < mesh->mNumFaces; ++t) {
-            const struct aiFace* face = &mesh->mFaces[t];
-            GLenum face_mode;
-
-            switch(face->mNumIndices) {
-                case 1: face_mode = GL_POINTS; break;
-                case 2: face_mode = GL_LINES; break;
-                case 3: face_mode = GL_TRIANGLES; break;
-                default: face_mode = GL_POLYGON; break;
-            }
-
-            glBegin(face_mode);
-
-            for(i = 0; i < face->mNumIndices; i++) {
-                int index = face->mIndices[i];
-                if(mesh->mColors[0] != NULL)
-                    glColor4fv((GLfloat*)&mesh->mColors[0][index]);
-                if(mesh->mNormals != NULL)
-                    glNormal3fv(&mesh->mNormals[index].x);
-                glVertex3fv(&mesh->mVertices[index].x);
-            }
-
-            glEnd();
-        }
-
-    }
-
-    // draw all children
-    for (n = 0; n < nd->mNumChildren; ++n) {
-        recursive_render(sc, nd->mChildren[n]);
-    }
-
-    glPopMatrix();
 }
 
 void SceneViewer::paintGL()
@@ -288,7 +161,7 @@ void SceneViewer::paintGL()
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
-    gluLookAt(0.f,0.f,1.f,0.f,0.f,-5.f,0.f,1.f,0.f);
+    gluLookAt(0.f, 0.f, m_cameraZ, 0.f, 0.f, -5.f, 0.f, 1.f, 0.f);
     // set camera matrix
     //m_renderer->setCamera(m_cameraX, m_cameraY, m_cameraZ, 0, 0, 0);
 
@@ -297,7 +170,6 @@ void SceneViewer::paintGL()
 
     foreach(SceneNode *sn, nodes())
     {
-        const aiScene *model = sn->getModel();
         float tmp = sn->getScale();
         //QMessageBox msg;
         //msg.setText(QString("Model meshes: %1").arg(model->mNumMeshes));
@@ -318,7 +190,7 @@ void SceneViewer::paintGL()
             // now begin at the root node of the imported data and traverse
             // the scenegraph by multiplying subsequent local transforms
             // together on GL's matrix stack.
-            recursive_render(model, model->mRootNode);
+            sn->draw();
             glEndList();
         }
         glCallList(m_sceneList);
@@ -334,4 +206,10 @@ void SceneViewer::paintGL()
     glVertex3f( 1.0f,-1.0f, 0.0f);
     glEnd();
 */
+}
+
+void SceneViewer::wheelEvent(QWheelEvent *event)
+{
+    m_cameraZ += event->delta() / 100;
+    repaint();
 }

@@ -98,6 +98,9 @@ protected:
     /** @reimp */
     void paintGL();
 
+    /** @reimp */
+    void wheelEvent(QWheelEvent *event);
+
     GLuint m_scene_list;
     GLRenderer *m_renderer;
 

@@ -35,8 +35,8 @@ class GLRenderer
 public:
     GLRenderer();
 
-    void set_float4(float f[], float a, float b, float c, float d);
-    void color4_to_float4(const aiColor4D *c, float f[]);
+    static void set_float4(float f[], float a, float b, float c, float d);
+    static void color4_to_float4(const aiColor4D *c, float f[]);
 
     // Vector functions
     void crossProduct(float *a, float *b, float *res);
