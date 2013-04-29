@@ -29,9 +29,53 @@
 
 SceneNode::SceneNode(QObject *parent)
     : QObject(parent)
-    , m_scene(NULL)
 {
 }
+
+SceneNode::MeshEntry::MeshEntry()
+{
+    VB = INVALID_OGL_VALUE;
+    IB = INVALID_OGL_VALUE;
+    NumIndices  = 0;
+    MaterialIndex = INVALID_MATERIAL;
+};
+
+SceneNode::MeshEntry::~MeshEntry()
+{
+    if (VB != INVALID_OGL_VALUE)
+    {
+        glDeleteBuffers(1, &VB);
+    }
+
+    if (IB != INVALID_OGL_VALUE)
+    {
+        glDeleteBuffers(1, &IB);
+    }
+}
+
+void SceneNode::MeshEntry::Init(const std::vector<Vertex>& Vertices,
+                          const std::vector<unsigned int>& Indices)
+{
+    NumIndices = Indices.size();
+
+    glGenBuffers(1, &VB);
+    glBindBuffer(GL_ARRAY_BUFFER, VB);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * Vertices.size(), &Vertices[0], GL_STATIC_DRAW);
+
+    glGenBuffers(1, &IB);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IB);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * NumIndices, &Indices[0], GL_STATIC_DRAW);
+}
+
+void SceneNode::clear()
+{
+/*
+    for (unsigned int i = 0 ; i < m_Textures.size() ; i++) {
+        SAFE_DELETE(m_Textures[i]);
+    }
+*/
+}
+
 
 /*****************************************************************************
  * Node ID
@@ -56,73 +100,24 @@ quint32 SceneNode::invalidId()
 /*****************************************************************************
  * Node model
  *****************************************************************************/
-void SceneNode::getBoundingBoxForNode(const aiNode *nd, aiVector3D *min, aiVector3D *max, aiMatrix4x4 *trafo)
-{
-    aiMatrix4x4 prev;
-    unsigned int n = 0, t;
-
-    prev = *trafo;
-    aiMultiplyMatrix4(trafo,&nd->mTransformation);
-
-    //int xx =   nd->mNumMeshes;
-
-    for (; n < nd->mNumMeshes; ++n)
-    {
-        const aiMesh* mesh = m_scene->mMeshes[nd->mMeshes[n]];
-        for (t = 0; t < mesh->mNumVertices; ++t)
-        {
-            aiVector3D tmp = mesh->mVertices[t];
-            aiTransformVecByMatrix4(&tmp,trafo);
-
-            min->x = aisgl_min(min->x,tmp.x);
-            min->y = aisgl_min(min->y,tmp.y);
-            min->z = aisgl_min(min->z,tmp.z);
-
-            max->x = aisgl_max(max->x,tmp.x);
-            max->y = aisgl_max(max->y,tmp.y);
-            max->z = aisgl_max(max->z,tmp.z);
-        }
-    }
-
-    for (n = 0; n < nd->mNumChildren; ++n)
-    {
-        getBoundingBoxForNode(nd->mChildren[n],min,max,trafo);
-    }
-    *trafo = prev;
-}
-
-void SceneNode::getBoundingBox(aiVector3D *min, aiVector3D *max)
-{
-    aiMatrix4x4 trafo;
-    aiIdentityMatrix4(&trafo);
-
-    min->x = min->y = min->z =  1e10f;
-    max->x = max->y = max->z = -1e10f;
-    getBoundingBoxForNode(m_scene->mRootNode,min,max,&trafo);
-}
 
 bool SceneNode::loadModel(QString path)
 {
-    m_scene = aiImportFile(path.toStdString().c_str(), aiProcessPreset_TargetRealtime_Quality);
+    // Release the previously loaded mesh (if it exists)
+    clear();
+
+    const aiScene* pScene = aiImportFile(path.toStdString().c_str(), aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs);
 
     // If the import failed, report it
-    if(m_scene == NULL)
+    if (pScene)
+    {
+        return initFromScene(pScene, path.toStdString().c_str());
+    }
+    else
     {
         qDebug() << Q_FUNC_INFO << "Cannot load " << path << " !!";
         return false;
     }
-
-    getBoundingBox(&m_sceneMin, &m_sceneMax);
-    m_sceneCenter.x = (m_sceneMin.x + m_sceneMax.x) / 2.0f;
-    m_sceneCenter.y = (m_sceneMin.y + m_sceneMax.y) / 2.0f;
-    m_sceneCenter.z = (m_sceneMin.z + m_sceneMax.z) / 2.0f;
-
-    return true;
-}
-
-const aiScene *SceneNode::getModel() const
-{
-    return m_scene;
 }
 
 float SceneNode::getScale()
@@ -140,136 +135,137 @@ aiVector3D SceneNode::getSceneCenter()
     return m_sceneMin;
 }
 
-// ----------------------------------------------------------------------------
-void SceneNode::apply_material(const struct aiMaterial *mtl)
+bool SceneNode::initFromScene(const aiScene* pScene, const std::string& Filename)
 {
-    float c[4];
+    m_Entries.resize(pScene->mNumMeshes);
+    //m_Textures.resize(pScene->mNumMaterials);
 
-    GLenum fill_mode;
-    int ret1, ret2;
-    aiColor4D diffuse;
-    aiColor4D specular;
-    aiColor4D ambient;
-    aiColor4D emission;
-    float shininess, strength;
-    int two_sided;
-    int wireframe;
-    unsigned int max;
+    // Initialize the meshes in the scene one by one
+    for (unsigned int i = 0 ; i < m_Entries.size() ; i++) {
+        const aiMesh* paiMesh = pScene->mMeshes[i];
+        initMesh(i, paiMesh);
+    }
 
-    GLRenderer::set_float4(c, 0.8f, 0.8f, 0.8f, 1.0f);
-    if(AI_SUCCESS == aiGetMaterialColor(mtl, AI_MATKEY_COLOR_DIFFUSE, &diffuse))
-        GLRenderer::color4_to_float4(&diffuse, c);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, c);
+    //return initMaterials(pScene, Filename);
+    return true;
+}
 
-    GLRenderer::set_float4(c, 0.0f, 0.0f, 0.0f, 1.0f);
-    if(AI_SUCCESS == aiGetMaterialColor(mtl, AI_MATKEY_COLOR_SPECULAR, &specular))
-        GLRenderer::color4_to_float4(&specular, c);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, c);
+void SceneNode::initMesh(unsigned int Index, const aiMesh* paiMesh)
+{
+    m_Entries[Index].MaterialIndex = paiMesh->mMaterialIndex;
 
-    GLRenderer::set_float4(c, 0.2f, 0.2f, 0.2f, 1.0f);
-    if(AI_SUCCESS == aiGetMaterialColor(mtl, AI_MATKEY_COLOR_AMBIENT, &ambient))
-        GLRenderer::color4_to_float4(&ambient, c);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, c);
+    std::vector<Vertex> Vertices;
+    std::vector<unsigned int> Indices;
 
-    GLRenderer::set_float4(c, 0.0f, 0.0f, 0.0f, 1.0f);
-    if(AI_SUCCESS == aiGetMaterialColor(mtl, AI_MATKEY_COLOR_EMISSIVE, &emission))
-        GLRenderer::color4_to_float4(&emission, c);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, c);
+    const aiVector3D Zero3D(0.0f, 0.0f, 0.0f);
 
-    max = 1;
-    ret1 = aiGetMaterialFloatArray(mtl, AI_MATKEY_SHININESS, &shininess, &max);
-    if(ret1 == AI_SUCCESS) {
-        max = 1;
-        ret2 = aiGetMaterialFloatArray(mtl, AI_MATKEY_SHININESS_STRENGTH, &strength, &max);
-        if(ret2 == AI_SUCCESS)
-            glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shininess * strength);
-        else
-            glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
+    for (unsigned int i = 0 ; i < paiMesh->mNumVertices ; i++) {
+        const aiVector3D* pPos      = &(paiMesh->mVertices[i]);
+        const aiVector3D* pNormal   = &(paiMesh->mNormals[i]);
+        const aiVector3D* pTexCoord = paiMesh->HasTextureCoords(0) ? &(paiMesh->mTextureCoords[0][i]) : &Zero3D;
+
+        Vertex v(Vector3f(pPos->x, pPos->y, pPos->z),
+                 Vector2f(pTexCoord->x, pTexCoord->y),
+                 Vector3f(pNormal->x, pNormal->y, pNormal->z));
+
+        Vertices.push_back(v);
+    }
+
+    for (unsigned int i = 0 ; i < paiMesh->mNumFaces ; i++)
+    {
+        const aiFace& Face = paiMesh->mFaces[i];
+        Q_ASSERT(Face.mNumIndices != 3);
+        Indices.push_back(Face.mIndices[0]);
+        Indices.push_back(Face.mIndices[1]);
+        Indices.push_back(Face.mIndices[2]);
+    }
+
+    m_Entries[Index].Init(Vertices, Indices);
+}
+/*
+bool SceneNode::initMaterials(const aiScene* pScene, const std::string& Filename)
+{
+    // Extract the directory part from the file name
+    std::string::size_type SlashIndex = Filename.find_last_of("/");
+    std::string Dir;
+
+    if (SlashIndex == std::string::npos) {
+        Dir = ".";
+    }
+    else if (SlashIndex == 0) {
+        Dir = "/";
     }
     else {
-        glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 0.0f);
-        GLRenderer::set_float4(c, 0.0f, 0.0f, 0.0f, 0.0f);
-        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, c);
+        Dir = Filename.substr(0, SlashIndex);
     }
 
-    max = 1;
-    if(AI_SUCCESS == aiGetMaterialIntegerArray(mtl, AI_MATKEY_ENABLE_WIREFRAME, &wireframe, &max))
-        fill_mode = wireframe ? GL_LINE : GL_FILL;
-    else
-        fill_mode = GL_FILL;
-    glPolygonMode(GL_FRONT_AND_BACK, fill_mode);
+    bool Ret = true;
 
-    max = 1;
-    if((AI_SUCCESS == aiGetMaterialIntegerArray(mtl, AI_MATKEY_TWOSIDED, &two_sided, &max)) && two_sided)
-        glDisable(GL_CULL_FACE);
-    else
-        glEnable(GL_CULL_FACE);
-}
-
-void SceneNode::draw(const struct aiNode* nd)
-{
-    unsigned int i;
-    unsigned int n = 0, t;
-    if (nd == NULL)
-        nd = m_scene->mRootNode;
-
-    aiMatrix4x4 m = nd->mTransformation;
-
-    // update transform
-    //aiTransposeMatrix4(&m); <-- AssImp 3.0 ??
-    m.Transpose();
-    glPushMatrix();
-    glMultMatrixf((float*)&m);
-
-    // draw all meshes assigned to this node
-    for (; n < nd->mNumMeshes; ++n)
+    // Initialize the materials
+    for (unsigned int i = 0 ; i < pScene->mNumMaterials ; i++)
     {
-        const struct aiMesh* mesh = m_scene->mMeshes[nd->mMeshes[n]];
+        const aiMaterial* pMaterial = pScene->mMaterials[i];
 
-        apply_material(m_scene->mMaterials[mesh->mMaterialIndex]);
+        m_Textures[i] = NULL;
 
-        if(mesh->mNormals == NULL) {
-            glDisable(GL_LIGHTING);
-        } else {
-            glEnable(GL_LIGHTING);
+        if (pMaterial->GetTextureCount(aiTextureType_DIFFUSE) > 0) {
+            aiString Path;
+
+            if (pMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &Path, NULL, NULL, NULL, NULL, NULL) == AI_SUCCESS) {
+                std::string FullPath = Dir + "/" + Path.data;
+                m_Textures[i] = new Texture(GL_TEXTURE_2D, FullPath.c_str());
+
+                if (!m_Textures[i]->Load()) {
+                    printf("Error loading texture '%s'\n", FullPath.c_str());
+                    delete m_Textures[i];
+                    m_Textures[i] = NULL;
+                    Ret = false;
+                }
+                else {
+                    printf("Loaded texture '%s'\n", FullPath.c_str());
+                }
+            }
         }
 
-        for (t = 0; t < mesh->mNumFaces; ++t)
+        // Load a white texture in case the model does not include its own texture
+        if (!m_Textures[i])
         {
-            const struct aiFace* face = &mesh->mFaces[t];
-            GLenum face_mode;
+            m_Textures[i] = new Texture(GL_TEXTURE_2D, "./white.png");
 
-            switch(face->mNumIndices)
-            {
-                case 1: face_mode = GL_POINTS; break;
-                case 2: face_mode = GL_LINES; break;
-                case 3: face_mode = GL_TRIANGLES; break;
-                default: face_mode = GL_POLYGON; break;
-            }
-
-            glBegin(face_mode);
-
-            for(i = 0; i < face->mNumIndices; i++)
-            {
-                int index = face->mIndices[i];
-                if(mesh->mColors[0] != NULL)
-                    glColor4fv((GLfloat*)&mesh->mColors[0][index]);
-
-                if(mesh->mNormals != NULL)
-                    glNormal3fv(&mesh->mNormals[index].x);
-
-                glVertex3fv(&mesh->mVertices[index].x);
-            }
-
-            glEnd();
+            Ret = m_Textures[i]->Load();
         }
-
     }
 
-    // draw all children
-    for (n = 0; n < nd->mNumChildren; ++n)
-        draw(nd->mChildren[n]);
-
-    glPopMatrix();
+    return Ret;
 }
+*/
+void SceneNode::render()
+{
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
+
+    for (unsigned int i = 0 ; i < m_Entries.size() ; i++)
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, m_Entries[i].VB);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)12);
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)20);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Entries[i].IB);
+/*
+        const unsigned int MaterialIndex = m_Entries[i].MaterialIndex;
+
+        if (MaterialIndex < m_Textures.size() && m_Textures[MaterialIndex]) {
+            m_Textures[MaterialIndex]->Bind(GL_TEXTURE0);
+        }
+*/
+        glDrawElements(GL_TRIANGLES, m_Entries[i].NumIndices, GL_UNSIGNED_INT, 0);
+    }
+
+    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(1);
+    glDisableVertexAttribArray(2);
+}
+
 

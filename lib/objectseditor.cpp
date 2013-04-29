@@ -97,8 +97,8 @@ void ObjectsEditor::slotObjectSelected(QTreeWidgetItem *item, int)
     SceneNode *node = m_scViewer->node(id);
     if (node != NULL)
     {
-        m_selectedObject = node->getModel();
         /*
+        m_selectedObject = node->getModel();
         m_xposSpin->setValue(m_selectedObject->x());
         m_yposSpin->setValue(m_selectedObject->y());
         m_zposSpin->setValue(m_selectedObject->z());

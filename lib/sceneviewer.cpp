@@ -326,12 +326,23 @@ void SceneViewer::resizeGL(int width, int height)
 
 void SceneViewer::paintGL()
 {
-    /* Make our background black */
+
+    glClearColor(0.0, 0.0, 0.0, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    foreach(SceneNode *sn, nodes())
+    {
+        sn->render();
+    }
+
+/*
+    // Make our background black
     glClearColor(0.0, 0.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    /* Invoke glDrawArrays telling that our data is a line loop and we want to draw 2-4 vertexes */
+    // Invoke glDrawArrays telling that our data is a line loop and we want to draw 2-4 vertexes
     glDrawArrays(GL_LINE_LOOP, 0, 4);
+*/
 
 /*
     //qDebug() << Q_FUNC_INFO;

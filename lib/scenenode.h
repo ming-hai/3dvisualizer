@@ -23,6 +23,7 @@
 #define SCENENODE_H
 
 #include <QObject>
+#include <vector>
 
 #include "GL/glew.h"
 #include "GL/glut.h"
@@ -30,6 +31,27 @@
 #include <assimp/cimport.h>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+
+#include "math_3d.h"
+
+#define INVALID_OGL_VALUE 0xFFFFFFFF
+#define SAFE_DELETE(p) if (p) { delete p; p = NULL; }
+
+struct Vertex
+{
+    Vector3f m_pos;
+    Vector2f m_tex;
+    Vector3f m_normal;
+
+    Vertex() {}
+
+    Vertex(const Vector3f& pos, const Vector2f& tex, const Vector3f& normal)
+    {
+        m_pos    = pos;
+        m_tex    = tex;
+        m_normal = normal;
+    }
+};
 
 class SceneNode : public QObject
 {
@@ -69,21 +91,36 @@ protected:
 public:
     bool loadModel(QString path);
 
-    const aiScene *getModel() const;
-
     float getScale();
 
     aiVector3D getSceneCenter();
 
-    void apply_material(const struct aiMaterial *mtl);
-    void draw (const struct aiNode* nd = NULL);
+    void render();
 
-protected:
-    void getBoundingBoxForNode (const aiNode* nd, aiVector3D* min, aiVector3D* max, aiMatrix4x4* trafo);
-    void getBoundingBox (aiVector3D* min, aiVector3D* max);
+private:
+    bool initFromScene(const aiScene* pScene, const std::string& Filename);
+    void initMesh(unsigned int Index, const aiMesh* paiMesh);
+    bool initMaterials(const aiScene* pScene, const std::string& Filename);
+    void clear();
 
-    /** Reference to the AssImp object for rendering and transformations */
-    const aiScene* m_scene;
+#define INVALID_MATERIAL 0xFFFFFFFF
+
+    struct MeshEntry {
+        MeshEntry();
+
+        ~MeshEntry();
+
+        void Init(const std::vector<Vertex>& Vertices,
+                  const std::vector<unsigned int>& Indices);
+
+        GLuint VB;
+        GLuint IB;
+        unsigned int NumIndices;
+        unsigned int MaterialIndex;
+    };
+
+    std::vector<MeshEntry> m_Entries;
+    //std::vector<Texture*> m_Textures;
 
     aiVector3D m_sceneMin, m_sceneMax;
     aiVector3D m_sceneCenter;

@@ -34,12 +34,14 @@ HEADERS += visualizer3d.h \
     sceneviewer.h \
     objectseditor.h \
     scenenode.h \
+    math_3d.h \
     glrenderer.h
 
 SOURCES += visualizer3d.cpp \
     sceneviewer.cpp \
     objectseditor.cpp \
     scenenode.cpp \
+    math_3d.cpp \
     glrenderer.cpp
 
 FORMS += objectseditor.ui
