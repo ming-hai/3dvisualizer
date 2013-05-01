@@ -32,17 +32,17 @@ win32 {
 
 HEADERS += visualizer3d.h \
     sceneviewer.h \
+    camera.h \
     objectseditor.h \
     scenenode.h \
-    math_3d.h \
-    glrenderer.h
+    math_3d.h
 
 SOURCES += visualizer3d.cpp \
     sceneviewer.cpp \
+    camera.cpp \
     objectseditor.cpp \
     scenenode.cpp \
-    math_3d.cpp \
-    glrenderer.cpp
+    math_3d.cpp
 
 FORMS += objectseditor.ui
 

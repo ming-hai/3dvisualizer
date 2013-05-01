@@ -27,8 +27,8 @@
 
 #include <QGLWidget>
 
+#include "camera.h"
 #include "scenenode.h"
-#include "glrenderer.h"
 
 class SceneViewer : public QGLWidget
 {
@@ -100,14 +100,12 @@ protected:
     void wheelEvent(QWheelEvent *event);
 
     const char *fileToBuffer(QString filename);
-    GLuint vao, vbo[2]; /* Create handles for our Vertex Array Object and two Vertex Buffer Objects */
-
-    GLuint m_scene_list;
-    GLRenderer *m_renderer;
+    GLuint vao; /* Create handles for our Vertex Array Object */
 
     // scale factor for the model to fit in the window
     float m_scaleFactor;
 
+    Camera* m_camera;
     // Camera Position
     float m_cameraX;
     float m_cameraY;

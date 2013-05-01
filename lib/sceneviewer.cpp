@@ -29,35 +29,16 @@ SceneViewer::SceneViewer(QWidget *parent)
     : QGLWidget(parent)
 {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-    m_scene_list = 0;
-    m_renderer = new GLRenderer();
+    //m_renderer = new GLRenderer();
 
     m_scaleFactor = 1.f;
 
+    m_camera = NULL;
     m_cameraX = 0;
     m_cameraY = 0;
     m_cameraZ = 2.0f;
 
     m_angle = 0.f;
-    m_sceneList = 0;
-
-    glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    /*
-    glEnable(GL_LIGHTING);
-    glEnable(GL_LIGHT0);
-    glEnable(GL_DEPTH_TEST);
-
-    glEnable(GL_NORMALIZE);
-    */
-    //glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
-    //glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);
-
-    qDebug() << "Vendor: " << glGetString (GL_VENDOR);
-    qDebug() << "Renderer: " << glGetString (GL_RENDERER);
-    qDebug() << "Version: " << glGetString (GL_VERSION);
-    qDebug() << "GLSL: " << glGetString (GL_SHADING_LANGUAGE_VERSION);
 }
 
 SceneViewer::~SceneViewer()
@@ -160,13 +141,6 @@ void SceneViewer::initializeGL()
     char *fragmentInfoLog;
     char *shaderProgramInfoLog;
 
-    /* We're going to create a simple diamond made from lines */
-    const GLfloat diamond[4][2] = {
-    {  0.0,  1.0  }, /* Top point */
-    {  1.0,  0.0  }, /* Right point */
-    {  0.0, -1.0  }, /* Bottom point */
-    { -1.0,  0.0  } }; /* Left point */
-
     /* These pointers will receive the contents of our shader source code files */
     const GLchar *vertexsource, *fragmentsource;
 
@@ -176,30 +150,28 @@ void SceneViewer::initializeGL()
     /* This is a handle to the shader program */
     GLuint shaderprogram;
 
-    //glewExperimental = GL_TRUE;
-    glewInit();
+    int argc = 0;
+    glutInit(&argc, NULL);
+    glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
 
+    qDebug() << "Vendor: " << glGetString (GL_VENDOR);
+    qDebug() << "Renderer: " << glGetString (GL_RENDERER);
+    qDebug() << "Version: " << glGetString (GL_VERSION);
+    qDebug() << "GLSL: " << glGetString (GL_SHADING_LANGUAGE_VERSION);
+
+    //glewExperimental = GL_TRUE;
+    GLenum res = glewInit();
+    if (res != GLEW_OK)
+    {
+        qDebug() <<  "Error: " << glewGetErrorString(res);
+        return;
+    }
+#if 0
     /* Allocate and assign a Vertex Array Object to our handle */
     glGenVertexArrays(1, &vao);
 
     /* Bind our Vertex Array Object as the current used object */
     glBindVertexArray(vao);
-
-    /* Allocate and assign two Vertex Buffer Objects to our handle */
-    glGenBuffers(1, vbo);
-
-    /* Bind our first VBO as being the active buffer and storing vertex attributes (coordinates) */
-    glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-
-    /* Copy the vertex data from diamond to our buffer */
-    /* 8 * sizeof(GLfloat) is the size of the diamond array, since it contains 8 GLfloat values */
-    glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(GLfloat), diamond, GL_STATIC_DRAW);
-
-    /* Specify that our coordinate data is going into attribute index 0, and contains two floats per vertex */
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
-
-    /* Enable attribute index 0 as being used */
-    glEnableVertexAttribArray(0);
 
     /* Read our shaders into the appropriate buffers */
     vertexsource = fileToBuffer("output/tutorial2.vert");
@@ -307,33 +279,44 @@ void SceneViewer::initializeGL()
 
     /* Load the shader into the rendering pipeline */
     glUseProgram(shaderprogram);
+#endif
+
+/*
+    Vector3f Pos(3.0f, 7.0f, -10.0f);
+    Vector3f Target(0.0f, -0.2f, 1.0f);
+    Vector3f Up(0.0, 1.0f, 0.0f);
+
+    m_camera = new Camera(width(), height(), Pos, Target, Up);
+*/
 }
 
 void SceneViewer::resizeGL(int width, int height)
 {
-    Q_UNUSED(width)
-    Q_UNUSED(height)
     //qDebug() << Q_FUNC_INFO;
+    //Q_UNUSED(width)
+    //Q_UNUSED(height)
 /*
     const double aspectRatio = (float) width / height, fieldOfView = 45.0;
-
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(fieldOfView, aspectRatio, 0.0, 2000.0);  // Znear and Zfar
-    glViewport(0, 0, width, height);
 */
+    glViewport(0, 0, width, height);
 }
 
 void SceneViewer::paintGL()
 {
+    //m_camera->OnRender();
 
-    glClearColor(0.0, 0.0, 0.0, 1.0);
+    //glClearColor(0.0, 0.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     foreach(SceneNode *sn, nodes())
     {
         sn->render();
     }
+    //this->swapBuffers();
+    //glutSwapBuffers();
 
 /*
     // Make our background black
