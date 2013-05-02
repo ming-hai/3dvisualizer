@@ -1,19 +1,16 @@
-#version 330 compatibility
+#version 130
+in  vec3 WorldPos;
+in  vec2 TexCoord;
+in  vec3 Normal;  
 
-out FSOutput
-{
-    vec3 WorldPos;
-    vec3 Diffuse;
-    vec3 Normal;
-    vec3 TexCoord;
-};
+uniform sampler2D gColorMap;          
 
-uniform sampler2D gColorMap;                
+out vec4 out_frag_color;      
 
-void main()
-{
-    FSout.WorldPos = FSin.WorldPos;
-    FSout.Diffuse  = texture(gColorMap, FSin.TexCoord).xyz;
-    FSout.Normal   = normalize(FSin.Normal);
-    FSout.TexCoord = vec3(FSin.TexCoord, 0.0);
+void main()                                 
+{                                           
+    out_frag_color = vec4(WorldPos,1);                 
+    out_frag_color = texture(gColorMap, TexCoord); 
+    out_frag_color = vec4(normalize(Normal),1);                    
+    out_frag_color = vec4(TexCoord, 0.0, 1.0);              
 };
