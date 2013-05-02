@@ -32,10 +32,8 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+#include "gbuffer.h"
 #include "math_3d.h"
-
-#define INVALID_OGL_VALUE 0xFFFFFFFF
-#define SAFE_DELETE(p) if (p) { delete p; p = NULL; }
 
 struct Vertex
 {
@@ -58,6 +56,8 @@ class SceneNode : public QObject
     Q_OBJECT
 public:
     SceneNode(QObject *parent = 0);
+
+    ~SceneNode();
 
     /*****************************************************************************
      * Node ID
@@ -97,25 +97,42 @@ public:
 
     void render();
 
+    void render(unsigned int NumInstances, const Matrix4f *WVPMats, const Matrix4f *WorldMats);
+
 private:
     bool initFromScene(const aiScene* pScene, const std::string& Filename);
-    void initMesh(unsigned int Index, const aiMesh* paiMesh);
+    void initMesh(const aiMesh* paiMesh,
+                  std::vector<Vector3f> &Positions,
+                  std::vector<Vector3f> &Normals,
+                  std::vector<Vector2f> &TexCoords,
+                  std::vector<unsigned int> &Indices);
     bool initMaterials(const aiScene* pScene, const std::string& Filename);
     void clear();
 
 #define INVALID_MATERIAL 0xFFFFFFFF
 
+#define INDEX_BUFFER 0
+#define POS_VB       1
+#define NORMAL_VB    2
+#define TEXCOORD_VB  3
+#define WVP_MAT_VB   4
+#define WORLD_MAT_VB 5
+
+    GLuint m_VAO;
+    GLuint m_Buffers[6];
+
     struct MeshEntry {
-        MeshEntry();
+        MeshEntry()
+        {
+            NumIndices = 0;
+            BaseVertex = 0;
+            BaseIndex = 0;
+            MaterialIndex = INVALID_MATERIAL;
+        }
 
-        ~MeshEntry();
-
-        void Init(const std::vector<Vertex>& Vertices,
-                  const std::vector<unsigned int>& Indices);
-
-        GLuint VB;
-        GLuint IB;
         unsigned int NumIndices;
+        unsigned int BaseVertex;
+        unsigned int BaseIndex;
         unsigned int MaterialIndex;
     };
 

@@ -25,13 +25,15 @@
 #include <QMessageBox>
 #include <QtGui>
 
+#include "pipeline.h"
+
 SceneViewer::SceneViewer(QWidget *parent)
     : QGLWidget(parent)
 {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     //m_renderer = new GLRenderer();
 
-    m_scaleFactor = 1.f;
+    m_scaleFactor = 0.0f;
 
     m_camera = NULL;
     m_cameraX = 0;
@@ -117,38 +119,9 @@ QList <SceneNode*> SceneViewer::nodes() const
 
 // ********************************* OPENGL reimplemented methods *********************************
 
-const char *SceneViewer::fileToBuffer(QString filename)
-{
-    QFile file(filename);
-    QString content;
-    if (file.open(QIODevice::ReadOnly | QIODevice::Text))
-    {
-        QTextStream in(&file);
-        content = in.readAll();
-        return content.toStdString().c_str();
-    }
-
-    return NULL;
-}
-
 void SceneViewer::initializeGL()
 {
     qDebug() << Q_FUNC_INFO;
-    int IsCompiled_VS, IsCompiled_FS;
-    int IsLinked;
-    int maxLength;
-    char *vertexInfoLog;
-    char *fragmentInfoLog;
-    char *shaderProgramInfoLog;
-
-    /* These pointers will receive the contents of our shader source code files */
-    const GLchar *vertexsource, *fragmentsource;
-
-    /* These are handles used to reference the shaders */
-    GLuint vertexshader, fragmentshader;
-
-    /* This is a handle to the shader program */
-    GLuint shaderprogram;
 
     int argc = 0;
     glutInit(&argc, NULL);
@@ -166,128 +139,74 @@ void SceneViewer::initializeGL()
         qDebug() <<  "Error: " << glewGetErrorString(res);
         return;
     }
-#if 0
-    /* Allocate and assign a Vertex Array Object to our handle */
-    glGenVertexArrays(1, &vao);
 
-    /* Bind our Vertex Array Object as the current used object */
-    glBindVertexArray(vao);
+    //glEnable(GL_DEPTH_TEST);
+    m_persProjInfo.FOV = 60.0f;
+    m_persProjInfo.Height = height();
+    m_persProjInfo.Width = width();
+    m_persProjInfo.zNear = 1.0f;
+    m_persProjInfo.zFar = 100.0f;
 
-    /* Read our shaders into the appropriate buffers */
-    vertexsource = fileToBuffer("output/tutorial2.vert");
-    if (vertexsource == NULL)
-        qDebug() << "Vertex shader not found !";
-    fragmentsource = fileToBuffer("output/tutorial2.frag");
-    if (fragmentsource == NULL)
-        qDebug() << "Fragment shader not found !";
+    m_spotLight.AmbientIntensity = 0.0f;
+    m_spotLight.DiffuseIntensity = 0.9f;
+    m_spotLight.Color = COLOR_WHITE;
+    m_spotLight.Attenuation.Linear = 0.01f;
+    m_spotLight.Position  = Vector3f(-20.0, 20.0, 5.0f);
+    m_spotLight.Direction = Vector3f(1.0f, -1.0f, 0.0f);
+    m_spotLight.Cutoff =  20.0f;
 
-    /* Create an empty vertex shader handle */
-    vertexshader = glCreateShader(GL_VERTEX_SHADER);
+    m_dirLight.AmbientIntensity = 0.1f;
+    m_dirLight.Color = COLOR_CYAN;
+    m_dirLight.DiffuseIntensity = 0.5f;
+    m_dirLight.Direction = Vector3f(1.0f, 0.0f, 0.0f);
 
-    /* Send the vertex shader source code to GL */
-    /* Note that the source code is NULL character terminated. */
-    /* GL will automatically detect that therefore the length info can be 0 in this case (the last parameter) */
-    glShaderSource(vertexshader, 1, (const GLchar**)&vertexsource, 0);
+    if (!m_gbuffer.Init(width(), height()))
+        return;
 
-    /* Compile the vertex shader */
-    glCompileShader(vertexshader);
+    m_camera = new Camera(width(), height());
 
-    glGetShaderiv(vertexshader, GL_COMPILE_STATUS, &IsCompiled_VS);
-    if(IsCompiled_VS == FALSE)
+    if (!m_DSGeomPassTech.Init())
     {
-       glGetShaderiv(vertexshader, GL_INFO_LOG_LENGTH, &maxLength);
-
-       /* The maxLength includes the NULL character */
-       vertexInfoLog = (char *)malloc(maxLength);
-
-       glGetShaderInfoLog(vertexshader, maxLength, &maxLength, vertexInfoLog);
-
-       /* Handle the error in an appropriate way such as displaying a message or writing to a log file. */
-       /* In this simple program, we'll just leave */
-       free(vertexInfoLog);
-       return;
+        qDebug() << "Error initializing DSGeomPassTech";
+        return;
     }
 
-    /* Create an empty fragment shader handle */
-    fragmentshader = glCreateShader(GL_FRAGMENT_SHADER);
+    m_DSGeomPassTech.Enable();
+    m_DSGeomPassTech.SetColorTextureUnit(COLOR_TEXTURE_UNIT_INDEX);
 
-    /* Send the fragment shader source code to GL */
-    /* Note that the source code is NULL character terminated. */
-    /* GL will automatically detect that therefore the length info can be 0 in this case (the last parameter) */
-    glShaderSource(fragmentshader, 1, (const GLchar**)&fragmentsource, 0);
-
-    /* Compile the fragment shader */
-    glCompileShader(fragmentshader);
-
-    glGetShaderiv(fragmentshader, GL_COMPILE_STATUS, &IsCompiled_FS);
-    if(IsCompiled_FS == FALSE)
+    if (!m_DSPointLightPassTech.Init())
     {
-       glGetShaderiv(fragmentshader, GL_INFO_LOG_LENGTH, &maxLength);
-
-       /* The maxLength includes the NULL character */
-       fragmentInfoLog = (char *)malloc(maxLength);
-
-       glGetShaderInfoLog(fragmentshader, maxLength, &maxLength, fragmentInfoLog);
-
-       /* Handle the error in an appropriate way such as displaying a message or writing to a log file. */
-       /* In this simple program, we'll just leave */
-       free(fragmentInfoLog);
-       return;
+        qDebug() << "Error initializing DSPointLightPassTech";
+        return;
     }
 
-    /* If we reached this point it means the vertex and fragment shaders compiled and are syntax error free. */
-    /* We must link them together to make a GL shader program */
-    /* GL shader programs are monolithic. It is a single piece made of 1 vertex shader and 1 fragment shader. */
-    /* Assign our program handle a "name" */
-    shaderprogram = glCreateProgram();
+    m_DSPointLightPassTech.Enable();
 
-    /* Attach our shaders to our program */
-    glAttachShader(shaderprogram, vertexshader);
-    glAttachShader(shaderprogram, fragmentshader);
+    m_DSPointLightPassTech.SetPositionTextureUnit(GBuffer::GBUFFER_TEXTURE_TYPE_POSITION);
+    m_DSPointLightPassTech.SetColorTextureUnit(GBuffer::GBUFFER_TEXTURE_TYPE_DIFFUSE);
+    m_DSPointLightPassTech.SetNormalTextureUnit(GBuffer::GBUFFER_TEXTURE_TYPE_NORMAL);
+    m_DSPointLightPassTech.SetScreenSize(width(), height());
 
-    /* Bind attribute index 0 (coordinates) to in_Position and attribute index 1 (color) to in_Color */
-    /* Attribute locations must be setup before calling glLinkProgram. */
-    glBindAttribLocation(shaderprogram, 0, "in_Position");
-    glBindAttribLocation(shaderprogram, 1, "in_Color");
-
-    /* Link our program */
-    /* At this stage, the vertex and fragment programs are inspected, optimized and a binary code is generated for the shader. */
-    /* The binary code is uploaded to the GPU, if there is no error. */
-    glLinkProgram(shaderprogram);
-
-    /* Again, we must check and make sure that it linked. If it fails, it would mean either there is a mismatch between the vertex */
-    /* and fragment shaders. It might be that you have surpassed your GPU's abilities. Perhaps too many ALU operations or */
-    /* too many texel fetch instructions or too many interpolators or dynamic loops. */
-
-    glGetProgramiv(shaderprogram, GL_LINK_STATUS, (int *)&IsLinked);
-    if(IsLinked == FALSE)
+    if (!m_DSDirLightPassTech.Init())
     {
-       /* Noticed that glGetProgramiv is used to get the length for a shader program, not glGetShaderiv. */
-       glGetProgramiv(shaderprogram, GL_INFO_LOG_LENGTH, &maxLength);
-
-       /* The maxLength includes the NULL character */
-       shaderProgramInfoLog = (char *)malloc(maxLength);
-
-       /* Notice that glGetProgramInfoLog, not glGetShaderInfoLog. */
-       glGetProgramInfoLog(shaderprogram, maxLength, &maxLength, shaderProgramInfoLog);
-
-       /* Handle the error in an appropriate way such as displaying a message or writing to a log file. */
-       /* In this simple program, we'll just leave */
-       free(shaderProgramInfoLog);
-       return;
+        qDebug() << "Error initializing DSDirLightPassTech";
+        return;
     }
 
-    /* Load the shader into the rendering pipeline */
-    glUseProgram(shaderprogram);
-#endif
+    m_DSDirLightPassTech.Enable();
 
-/*
-    Vector3f Pos(3.0f, 7.0f, -10.0f);
-    Vector3f Target(0.0f, -0.2f, 1.0f);
-    Vector3f Up(0.0, 1.0f, 0.0f);
+    m_DSDirLightPassTech.SetPositionTextureUnit(GBuffer::GBUFFER_TEXTURE_TYPE_POSITION);
+    m_DSDirLightPassTech.SetColorTextureUnit(GBuffer::GBUFFER_TEXTURE_TYPE_DIFFUSE);
+    m_DSDirLightPassTech.SetNormalTextureUnit(GBuffer::GBUFFER_TEXTURE_TYPE_NORMAL);
+    m_DSDirLightPassTech.SetDirectionalLight(m_dirLight);
+    m_DSDirLightPassTech.SetScreenSize(width(), height());
+    Matrix4f WVP;
+    WVP.InitIdentity();
+    m_DSDirLightPassTech.SetWVP(WVP);
 
-    m_camera = new Camera(width(), height(), Pos, Target, Up);
-*/
+    if (!m_nullTech.Init()) {
+        return;
+    }
 }
 
 void SceneViewer::resizeGL(int width, int height)
@@ -306,83 +225,168 @@ void SceneViewer::resizeGL(int width, int height)
 
 void SceneViewer::paintGL()
 {
-    //m_camera->OnRender();
+    m_camera->OnRender();
 
     //glClearColor(0.0, 0.0, 0.0, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    foreach(SceneNode *sn, nodes())
+    m_gbuffer.StartFrame();
+
+    DSGeometryPass();
+
+    // We need stencil to be enabled in the stencil pass to get the stencil buffer
+    // updated and we also need it in the light pass because we render the light
+    // only if the stencil passes.
+/*
+    glEnable(GL_STENCIL_TEST);
+
+    for (unsigned int i = 0 ; i < ARRAY_SIZE_IN_ELEMENTS(m_pointLight); i++)
     {
-        sn->render();
+        DSStencilPass(i);
+        DSPointLightPass(i);
     }
+
+    // The directional light does not need a stencil test because its volume
+    // is unlimited and the final pass simply copies the texture.
+    glDisable(GL_STENCIL_TEST);
+*/
+    DSDirectionalLightPass();
+
+    DSFinalPass();
+
     //this->swapBuffers();
     //glutSwapBuffers();
+}
 
-/*
-    // Make our background black
-    glClearColor(0.0, 0.0, 0.0, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT);
+void SceneViewer::DSGeometryPass()
+{
+    m_DSGeomPassTech.Enable();
 
-    // Invoke glDrawArrays telling that our data is a line loop and we want to draw 2-4 vertexes
-    glDrawArrays(GL_LINE_LOOP, 0, 4);
-*/
+    m_gbuffer.BindForGeomPass();
 
-/*
-    //qDebug() << Q_FUNC_INFO;
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    // Only the geometry pass updates the depth buffer
+    glDepthMask(GL_TRUE);
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
+    glEnable(GL_DEPTH_TEST);
 
-    gluLookAt(0.f, 0.f, m_cameraZ, 0.f, 0.f, -5.f, 0.f, 1.f, 0.f);
-    // set camera matrix
-    //m_renderer->setCamera(m_cameraX, m_cameraY, m_cameraZ, 0, 0, 0);
-
-    // rotate it around the y axis
-    glRotatef(m_angle, 0.f,1.f,0.f);
+    Pipeline p;
+    p.SetCamera(m_camera->GetPos(), m_camera->GetTarget(), m_camera->GetUp());
+    p.SetPerspectiveProj(m_persProjInfo);
+    p.Rotate(0.0f, m_scaleFactor, 0.0f);
 
     foreach(SceneNode *sn, nodes())
     {
-        float tmp = sn->getScale();
-        //QMessageBox msg;
-        //msg.setText(QString("Model meshes: %1").arg(model->mNumMeshes));
-        //msg.exec();
-
-        // scale the whole asset to fit into our view frustum
-        glScalef(tmp, tmp, tmp);
-
-        // center the model
-        aiVector3D sceneCenter = sn->getSceneCenter();
-        glTranslatef( -sceneCenter.x, -sceneCenter.y, -sceneCenter.z);
-        // if the display list has not been made yet, create a new one and
-        // fill it with scene contents
-        if(m_sceneList == 0)
-        {
-            m_sceneList = glGenLists(1);
-            glNewList(m_sceneList, GL_COMPILE);
-            // now begin at the root node of the imported data and traverse
-            // the scenegraph by multiplying subsequent local transforms
-            // together on GL's matrix stack.
-            sn->draw();
-            glEndList();
-        }
-        glCallList(m_sceneList);
+        p.WorldPos(Vector3f(0.0f, 0.0f, 5.0f));
+        m_DSGeomPassTech.SetWVP(p.GetWVPTrans());
+        m_DSGeomPassTech.SetWorldMatrix(p.GetWorldTrans());
+        sn->render();
+    }
+/*
+    for (unsigned int i = 0 ; i < ARRAY_SIZE_IN_ELEMENTS(m_boxPositions) ; i++)
+    {
+        p.WorldPos(m_boxPositions[i]);
+        m_DSGeomPassTech.SetWVP(p.GetWVPTrans());
+        m_DSGeomPassTech.SetWorldMatrix(p.GetWorldTrans());
+        m_box.Render();
     }
 */
-
+    // When we get here the depth buffer is already populated and the stencil pass
+    // depends on it, but it does not write to it.
+    glDepthMask(GL_FALSE);
+}
 
 /*
-    // CUBE for dummies
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+void SceneViewer::DSStencilPass(unsigned int PointLightIndex)
+{
+    m_nullTech.Enable();
 
-    glColor3f (1.0, 1.0, 1.0);
-    glBegin(GL_TRIANGLES);
-    glVertex3f( 0.0f, 1.0f, 0.0f);
-    glVertex3f(-1.0f,-1.0f, 0.0f);
-    glVertex3f( 1.0f,-1.0f, 0.0f);
-    glEnd();
+    // Disable color/depth write and enable stencil
+    m_gbuffer.BindForStencilPass();
+    glEnable(GL_DEPTH_TEST);
+
+    glDisable(GL_CULL_FACE);
+
+    glClear(GL_STENCIL_BUFFER_BIT);
+
+    // We need the stencil test to be enabled but we want it
+    // to succeed always. Only the depth test matters.
+    glStencilFunc(GL_ALWAYS, 0, 0);
+
+    glStencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR, GL_KEEP);
+    glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR, GL_KEEP);
+
+    Pipeline p;
+    p.WorldPos(m_pointLight[PointLightIndex].Position);
+    float BBoxScale = CalcPointLightBSphere(m_pointLight[PointLightIndex].Color,
+                                         m_pointLight[PointLightIndex].DiffuseIntensity);
+    p.Scale(BBoxScale, BBoxScale, BBoxScale);
+    p.SetCamera(m_pGameCamera->GetPos(), m_pGameCamera->GetTarget(), m_pGameCamera->GetUp());
+    p.SetPerspectiveProj(m_persProjInfo);
+
+    m_nullTech.SetWVP(p.GetWVPTrans());
+    //m_bsphere.Render();
+}
+
+
+void SceneViewer::DSPointLightPass(unsigned int PointLightIndex)
+{
+    m_gbuffer.BindForLightPass();
+
+    m_DSPointLightPassTech.Enable();
+    m_DSPointLightPassTech.SetEyeWorldPos(m_pGameCamera->GetPos());
+
+    glStencilFunc(GL_NOTEQUAL, 0, 0xFF);
+
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendEquation(GL_FUNC_ADD);
+    glBlendFunc(GL_ONE, GL_ONE);
+
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_FRONT);
+
+    Pipeline p;
+    p.WorldPos(m_pointLight[PointLightIndex].Position);
+    float BBoxScale = CalcPointLightBSphere(m_pointLight[PointLightIndex].Color,
+                                            m_pointLight[PointLightIndex].DiffuseIntensity);
+    p.Scale(BBoxScale, BBoxScale, BBoxScale);
+    p.SetCamera(m_pGameCamera->GetPos(), m_pGameCamera->GetTarget(), m_pGameCamera->GetUp());
+    p.SetPerspectiveProj(m_persProjInfo);
+    m_DSPointLightPassTech.SetWVP(p.GetWVPTrans());
+    m_DSPointLightPassTech.SetPointLight(m_pointLight[PointLightIndex]);
+    //m_bsphere.Render();
+    glCullFace(GL_BACK);
+
+    glDisable(GL_BLEND);
+}
 */
+
+void SceneViewer::DSDirectionalLightPass()
+{
+    m_gbuffer.BindForLightPass();
+
+    m_DSDirLightPassTech.Enable();
+    m_DSDirLightPassTech.SetEyeWorldPos(m_camera->GetPos());
+
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendEquation(GL_FUNC_ADD);
+    glBlendFunc(GL_ONE, GL_ONE);
+
+    foreach(SceneNode *sn, nodes())
+        sn->render();
+
+    glDisable(GL_BLEND);
+}
+
+
+void SceneViewer::DSFinalPass()
+{
+    m_gbuffer.BindForFinalPass();
+    glBlitFramebuffer(0, 0, width(), height(),
+                      0, 0, width(), height(), GL_COLOR_BUFFER_BIT, GL_LINEAR);
 }
 
 void SceneViewer::wheelEvent(QWheelEvent *event)

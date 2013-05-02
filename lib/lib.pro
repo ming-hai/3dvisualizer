@@ -35,14 +35,32 @@ HEADERS += visualizer3d.h \
     camera.h \
     objectseditor.h \
     scenenode.h \
-    math_3d.h
+    math_3d.h \
+    gbuffer.h \
+    pipeline.h \
+    technique.h \
+    lights_common.h \
+    ds_dir_light_pass_tech.h \
+    ds_point_light_pass_tech.h \
+    ds_light_pass_tech.h \
+    ds_geom_pass_tech.h \
+    null_technique.h
 
 SOURCES += visualizer3d.cpp \
     sceneviewer.cpp \
     camera.cpp \
     objectseditor.cpp \
     scenenode.cpp \
-    math_3d.cpp
+    math_3d.cpp \
+    gbuffer.cpp \
+    pipeline.cpp \
+    technique.cpp \
+    ds_dir_light_pass_tech.cpp \
+    ds_point_light_pass_tech.cpp \
+    ds_light_pass_tech.cpp \
+    ds_geom_pass_tech.cpp \
+    null_technique.cpp
+
 
 FORMS += objectseditor.ui
 
