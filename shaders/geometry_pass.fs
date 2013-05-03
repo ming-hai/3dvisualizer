@@ -1,17 +1,20 @@
-#version 410 compatibility
+#version 330 compatibility
 
-in layout(location = 0) vec3 WorldPos;
-in layout(location = 1) vec2 TexCoord;
-in layout(location = 2) vec3 Normal;  
+in vec3 inWorldPos;
+in vec2 inTexCoord;
+in vec3 inNormal;  
 
-uniform sampler2D gColorMap;          
-
-out vec4 out_frag_color;      
+out vec3 WorldPos;    
+out vec3 Diffuse;     
+out vec3 Normal;      
+out vec3 TexCoord; 
+    
+uniform sampler2D gColorMap;
 
 void main()                                 
 {                                           
-    out_frag_color = vec4(WorldPos,1);                 
-    out_frag_color = texture(gColorMap, TexCoord); 
-    out_frag_color = vec4(normalize(Normal),1);                    
-    out_frag_color = vec4(TexCoord, 0.0, 1.0);              
+    WorldPos = inWorldPos;                                 
+    Diffuse  = texture(gColorMap, inTexCoord).xyz; 
+    Normal   = normalize(inNormal);                                        
+    TexCoord = vec3(inTexCoord, 0.0);           
 };
