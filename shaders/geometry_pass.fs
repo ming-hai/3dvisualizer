@@ -1,7 +1,8 @@
-#version 130
-in  vec3 WorldPos;
-in  vec2 TexCoord;
-in  vec3 Normal;  
+#version 410 compatibility
+
+in layout(location = 0) vec3 WorldPos;
+in layout(location = 1) vec2 TexCoord;
+in layout(location = 2) vec3 Normal;  
 
 uniform sampler2D gColorMap;          
 
