@@ -125,12 +125,12 @@ void SceneViewer::initializeGL()
 
     int argc = 0;
     glutInit(&argc, NULL);
-    glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
+    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
 
-    qDebug() << "Vendor: " << glGetString (GL_VENDOR);
-    qDebug() << "Renderer: " << glGetString (GL_RENDERER);
-    qDebug() << "Version: " << glGetString (GL_VERSION);
-    qDebug() << "GLSL: " << glGetString (GL_SHADING_LANGUAGE_VERSION);
+    qDebug() << "Vendor: " << QString((const char *)glGetString (GL_VENDOR));
+    qDebug() << "Renderer: " << QString((const char *)glGetString (GL_RENDERER));
+    qDebug() << "Version: " << QString((const char *)glGetString (GL_VERSION));
+    qDebug() << "GLSL: " << QString((const char *)glGetString (GL_SHADING_LANGUAGE_VERSION));
 
     //glewExperimental = GL_TRUE;
     GLenum res = glewInit();
