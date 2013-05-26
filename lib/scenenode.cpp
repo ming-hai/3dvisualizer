@@ -32,6 +32,10 @@
 #define WVP_LOCATION 3
 #define WORLD_LOCATION 7
 
+#define ZERO_MEM(a) memset(a, 0, sizeof(a))
+#define ARRAY_SIZE_IN_ELEMENTS(a) (sizeof(a)/sizeof(a[0]))
+#define GLCheckError() (glGetError() == GL_NO_ERROR)
+
 SceneNode::SceneNode(QObject *parent)
     : QObject(parent)
 {

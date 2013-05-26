@@ -32,7 +32,6 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#include "gbuffer.h"
 #include "math_3d.h"
 
 struct Vertex

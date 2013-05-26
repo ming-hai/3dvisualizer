@@ -165,7 +165,7 @@ inline Vector3f operator*(const Vector3f& l, float f)
 struct PersProjInfo
 {
     float FOV;
-    float Width; 
+    float Width;
     float Height;
     float zNear;
     float zFar;

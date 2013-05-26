@@ -27,12 +27,8 @@
 
 #include <QGLWidget>
 
-#include "camera.h"
+#include "framebufferdata.h"
 #include "scenenode.h"
-#include "ds_geom_pass_tech.h"
-#include "ds_point_light_pass_tech.h"
-#include "ds_dir_light_pass_tech.h"
-#include "null_technique.h"
 
 class SceneViewer : public QGLWidget
 {
@@ -103,28 +99,11 @@ protected:
     /** @reimp */
     void wheelEvent(QWheelEvent *event);
 
-    void DSFinalPass();
-    void DSDirectionalLightPass();
-    void DSPointLightPass(unsigned int PointLightIndex);
-    void DSStencilPass(unsigned int PointLightIndex);
-    void DSGeometryPass();
-
-    GLuint vao; /* Create handles for our Vertex Array Object */
-
+private:
+    BufferSet* mainBufferSet;
     // scale factor for the model to fit in the window
     float m_scaleFactor;
 
-    GBuffer m_gbuffer;
-
-    DSGeomPassTech m_DSGeomPassTech;
-    DSPointLightPassTech m_DSPointLightPassTech;
-    DSDirLightPassTech m_DSDirLightPassTech;
-    NullTechnique m_nullTech;
-    SpotLight m_spotLight;
-    DirectionalLight m_dirLight;
-    PersProjInfo m_persProjInfo;
-
-    Camera* m_camera;
     // Camera Position
     float m_cameraX;
     float m_cameraY;
