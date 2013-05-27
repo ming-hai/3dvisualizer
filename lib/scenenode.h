@@ -33,6 +33,9 @@
 #include <assimp/postprocess.h>
 
 #include "math_3d.h"
+#include "shaderdata.h"
+
+#define INVALID_MATERIAL 0xFFFFFFFF
 
 struct Vertex
 {
@@ -48,6 +51,15 @@ struct Vertex
         m_tex    = tex;
         m_normal = normal;
     }
+};
+
+enum DrawingPass
+{
+    DrawingPassSolid,
+    DrawingPassSolidForced,
+    DrawingPassTransparent,
+    DrawingPassDeffered,
+    DrawingPassShadow
 };
 
 class SceneNode : public QObject
@@ -94,31 +106,33 @@ public:
 
     aiVector3D getSceneCenter();
 
-    void render();
+    void bind();
 
-    void render(unsigned int NumInstances, const Matrix4f *WVPMats, const Matrix4f *WorldMats);
+    void render();
+    void render(enum DrawingPass pass);
 
 private:
     bool initFromScene(const aiScene* pScene, const std::string& Filename);
-    void initMesh(const aiMesh* paiMesh,
-                  std::vector<Vector3f> &Positions,
-                  std::vector<Vector3f> &Normals,
-                  std::vector<Vector2f> &TexCoords,
-                  std::vector<unsigned int> &Indices);
+    void initMesh(const aiMesh* paiMesh);
     bool initMaterials(const aiScene* pScene, const std::string& Filename);
+    void generateTangents();
     void clear();
 
-#define INVALID_MATERIAL 0xFFFFFFFF
-
-#define INDEX_BUFFER 0
-#define POS_VB       1
-#define NORMAL_VB    2
-#define TEXCOORD_VB  3
-#define WVP_MAT_VB   4
-#define WORLD_MAT_VB 5
+    bool m_useVertexArrays;
 
     GLuint m_VAO;
-    GLuint m_Buffers[6];
+    GLuint m_VBO[6];
+
+    Matrix4f m_modelMatrix;
+
+    std::vector<Vector3f> m_Positions;
+    std::vector<Vector3f> m_Normals;
+    std::vector<Vector2f> m_TexCoords;
+    std::vector<Vector3f> m_Tangents;
+    std::vector<Vector3f> m_BiNormals;
+    std::vector<unsigned int> m_Indices;
+
+    QList<UniformInsert*> m_uniformInserts;
 
     struct MeshEntry {
         MeshEntry()

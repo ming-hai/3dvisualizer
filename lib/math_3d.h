@@ -50,6 +50,39 @@ struct Vector2f
         x = _x;
         y = _y;
     }
+
+    Vector2f operator-() const
+    {
+        return Vector2f(-x, -y);
+    }
+
+    Vector2f operator+(const Vector2f &r) const
+    {
+        Vector2f temp = Vector2f(x, y);
+        temp += r;
+        return temp;
+    }
+
+    Vector2f operator-(const Vector2f &r) const
+    {
+        Vector2f temp = Vector2f(x, y);
+        temp -= r;
+        return temp;
+    }
+
+    Vector2f operator+=(const Vector2f &r)
+    {
+        x += r.x;
+        y += r.y;
+        return *this;
+    }
+
+    Vector2f operator-=(const Vector2f &r)
+    {
+        x -= r.x;
+        y -= r.y;
+        return *this;
+    }
 };
 
 
@@ -70,7 +103,62 @@ struct Vector3f
         z = _z;
     }
 
-    Vector3f& operator+=(const Vector3f& r)
+    Vector3f operator + ( const Vector3f &r )
+    {
+        const float _x = x + r.x;
+        const float _y = y + r.y;
+        const float _z = z + r.z;
+
+        return Vector3f(_x, _y, _z);
+    }
+
+    Vector3f operator + ( void ) const
+    {
+        return *this;
+    }
+
+    Vector3f operator - ( const Vector3f &r )
+    {
+        const float _x = x - r.x;
+        const float _y = y - r.y;
+        const float _z = z - r.z;
+
+        return Vector3f(_x, _y, _z);
+    }
+
+    Vector3f operator - ( void ) const
+    {
+        return Vector3f(-x, -y, -z);
+    }
+
+    Vector3f operator * ( const Vector3f &r )
+    {
+        const float _x = x * r.x;
+        const float _y = y * r.y;
+        const float _z = z * r.z;
+
+        return Vector3f(_x, _y, _z);
+    }
+
+    Vector3f operator * ( const float scalar )
+    {
+        const float _x = x * scalar;
+        const float _y = y * scalar;
+        const float _z = z * scalar;
+
+        return Vector3f(_x, _y, _z);
+    }
+
+    Vector3f operator / ( const Vector3f &r )
+    {
+        const float _x = x / r.x;
+        const float _y = y / r.y;
+        const float _z = z / r.z;
+
+        return Vector3f(_x, _y, _z);
+    }
+
+    Vector3f operator+=(const Vector3f& r)
     {
         x += r.x;
         y += r.y;
@@ -79,7 +167,7 @@ struct Vector3f
         return *this;
     }
 
-    Vector3f& operator-=(const Vector3f& r)
+    Vector3f operator-=(const Vector3f& r)
     {
         x -= r.x;
         y -= r.y;
@@ -88,7 +176,7 @@ struct Vector3f
         return *this;
     }
 
-    Vector3f& operator*=(float f)
+    Vector3f operator*=(float f)
     {
         x *= f;
         y *= f;
