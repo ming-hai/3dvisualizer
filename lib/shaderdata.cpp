@@ -244,7 +244,7 @@ void ShaderData::UniformMatrix4fv(enum Uniforms target, GLfloat* matrix )
 void ShaderData::UniformMatrix4fv(enum Uniforms target, const Matrix4f &matrix)
 {
 	GLint location = curShader->getLocation(target);
-    glUniformMatrix4fv(location, 1,GL_FALSE, (const GLfloat*)matrix.m);
+    glUniformMatrix4fv(location, 1,GL_FALSE, (const GLfloat*)matrix.m_matrix);
 }
 
 GLint ShaderData::getLocation(enum Uniforms target)
