@@ -29,6 +29,8 @@
 
 #include "framebufferdata.h"
 #include "scenenode.h"
+#include "materialdata.h"
+#include "view.h"
 
 class SceneViewer : public QGLWidget
 {
@@ -113,6 +115,9 @@ private:
     float m_angle;
 
     GLuint m_sceneList;
+
+    MaterialData* m_defaultMaterial;
+    View m_view;
 
 signals:
     void nodeChanged(quint32 id);

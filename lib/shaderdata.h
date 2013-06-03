@@ -83,6 +83,15 @@ enum DataType
 	DataTypeVector3
 };
 
+enum DrawingPass
+{
+    DrawingPassSolid,
+    DrawingPassSolidForced,
+    DrawingPassTransparent,
+    DrawingPassDeffered,
+    DrawingPassShadow
+};
+
 struct UniformInsert
 {
     enum Uniforms uniform;
@@ -108,7 +117,7 @@ class ShaderData
 {
 public:
 	GLuint shaderprogram;
-	ShaderData(char* vertexShader, char* fragmentShader);
+    ShaderData(const char* vertexShader,const char* fragmentShader);
 	~ShaderData(void);
 	void Bind(void);
     QString VertexName;

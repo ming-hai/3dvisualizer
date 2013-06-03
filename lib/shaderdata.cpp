@@ -84,7 +84,7 @@ void ShaderData::generateLocations()
 	}
 }
 
-ShaderData::ShaderData(char* vertexsource, char* fragmentsource)
+ShaderData::ShaderData(const char* vertexsource,const char* fragmentsource)
 {
 	char *vertexInfoLog;
     char *fragmentInfoLog;
@@ -113,11 +113,15 @@ ShaderData::ShaderData(char* vertexsource, char* fragmentsource)
        glGetShaderInfoLog(vertexshader, maxLength, &maxLength, vertexInfoLog);
  
        /* Handle the error in an appropriate way such as displaying a message or writing to a log file. */
-       qDebug() << vertexInfoLog;
+       qDebug() << "Compiled Vertex Shader: " << vertexInfoLog;
 
        /* In this simple program, we'll just leave */
        free(vertexInfoLog);
        return;
+    }
+    else
+    {
+        qDebug() << "Compiled Vertex Successfully";
     }
  
     /* Create an empty fragment shader handle */
@@ -142,11 +146,15 @@ ShaderData::ShaderData(char* vertexsource, char* fragmentsource)
        glGetShaderInfoLog(fragmentshader, maxLength, &maxLength, fragmentInfoLog);
  
        /* Handle the error in an appropriate way such as displaying a message or writing to a log file. */
-       qDebug() << fragmentInfoLog;
+       qDebug() << "Compiled Vertex Shader: " << fragmentInfoLog;
 
        /* In this simple program, we'll just leave */
        free(fragmentInfoLog);
        return;
+    }
+    else
+    {
+        qDebug() << "Compiled Fragment Shader Successfully";
     }
 
     /* Assign our program handle a "name" */
@@ -169,8 +177,8 @@ ShaderData::ShaderData(char* vertexsource, char* fragmentsource)
 
 	glUseProgram(0);
 
-	free(vertexsource);
-    free(fragmentsource);
+    //free(vertexsource);
+    //free(fragmentsource);
 
     Shaders.append(this);
 }
@@ -204,7 +212,7 @@ ShaderData* ShaderData::FromPlainText(QString vertexSource, QString fragmentSour
     QString vertexsource = fileToBuffer(vertexSource);
     QString fragmentsource = fileToBuffer(fragmentSource);
 
-    ShaderData* Shader = new ShaderData(vertexsource.toAscii().data(), fragmentsource.toAscii().data());
+    ShaderData* Shader = new ShaderData(vertexsource.toStdString().c_str(), fragmentsource.toStdString().c_str());
     Shader->VertexName = vertexSource;
     Shader->FragmentName = fragmentSource;
 
@@ -245,6 +253,12 @@ void ShaderData::UniformMatrix4fv(enum Uniforms target, const Matrix4f &matrix)
 {
 	GLint location = curShader->getLocation(target);
     glUniformMatrix4fv(location, 1,GL_FALSE, (const GLfloat*)matrix.m_matrix);
+
+//    qDebug() << Q_FUNC_INFO << "INSERTING MATRIX";
+//    qDebug() << matrix.m[0][0] << matrix.m[0][1] << matrix.m[0][2] << matrix.m[0][3];
+//    qDebug() << matrix.m[1][0] << matrix.m[1][1] << matrix.m[1][2] << matrix.m[1][3];
+//    qDebug() << matrix.m[2][0] << matrix.m[2][1] << matrix.m[2][2] << matrix.m[2][3];
+//    qDebug() << matrix.m[3][0] << matrix.m[3][1] << matrix.m[3][2] << matrix.m[3][3];
 }
 
 GLint ShaderData::getLocation(enum Uniforms target)

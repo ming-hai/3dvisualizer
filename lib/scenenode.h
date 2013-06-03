@@ -34,6 +34,7 @@
 
 #include "math_3d.h"
 #include "shaderdata.h"
+#include "materialdata.h"
 
 #define INVALID_MATERIAL 0xFFFFFFFF
 
@@ -51,15 +52,6 @@ struct Vertex
         m_tex    = tex;
         m_normal = normal;
     }
-};
-
-enum DrawingPass
-{
-    DrawingPassSolid,
-    DrawingPassSolidForced,
-    DrawingPassTransparent,
-    DrawingPassDeffered,
-    DrawingPassShadow
 };
 
 class SceneNode : public QObject
@@ -101,6 +93,7 @@ protected:
      *****************************************************************************/
 public:
     bool loadModel(QString path);
+    bool attachMaterial(MaterialData* material);
 
     float getScale();
 
@@ -110,6 +103,8 @@ public:
 
     void render();
     void render(enum DrawingPass pass);
+
+
 
 private:
     bool initFromScene(const aiScene* pScene, const std::string& Filename);
@@ -154,6 +149,8 @@ private:
 
     aiVector3D m_sceneMin, m_sceneMax;
     aiVector3D m_sceneCenter;
+
+    MaterialData* m_material;
 
 signals:
     void changed(quint32 id);

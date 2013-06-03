@@ -23,13 +23,12 @@
 #define MATERIALDATA_H
 
 #include "shaderdata.h"
-#include "scenenode.h"
 
 class MaterialData
 {
 public:
     MaterialData();
-    bool bind(DrawingPass pass);
+    bool bind(enum DrawingPass pass);
 private:
     ShaderData* normalShader;
 };

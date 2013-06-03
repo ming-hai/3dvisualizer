@@ -31,7 +31,7 @@ MaterialData::MaterialData()
                 QString("shaders%1normal.fs").arg(QDir::separator()));
 }
 
-bool MaterialData::bind(DrawingPass pass)
+bool MaterialData::bind(enum DrawingPass pass)
 {
     normalShader->Bind();
     return true;

@@ -75,6 +75,8 @@ quint32 SceneViewer::addNode(QString path, quint32 id)
             delete node;
             return SceneNode::invalidId();
         }
+        node->attachMaterial(m_defaultMaterial);
+
         m_nodes[id] = node;
         node->setID(id);
         connect(node, SIGNAL(changed(quint32)),
@@ -151,6 +153,12 @@ void SceneViewer::initializeGL()
     mainBufferSet->SizeX = width();
     mainBufferSet->SizeY = height();
     mainBufferSet->Initialize();
+
+    // Load Default material
+    m_defaultMaterial = new MaterialData();
+
+    // Setup View
+    m_view.bind();
 }
 
 void SceneViewer::resizeGL(int width, int height)
@@ -175,5 +183,10 @@ void SceneViewer::paintGL()
     glCullFace(GL_BACK);
     glDepthMask(GL_TRUE);
     glDepthFunc(GL_LEQUAL);
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    foreach(SceneNode *sn, nodes())
+        sn->render();
 }
 

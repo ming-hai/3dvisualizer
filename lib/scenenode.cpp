@@ -20,6 +20,7 @@
 */
 
 #include "scenenode.h"
+#include "view.h"
 
 #include <QDebug>
 
@@ -33,11 +34,11 @@
 #define BINORMALS_VB  4
 #define INDICES_VB    5
 
-#define POSITION_LOCATION   0
-#define NORMAL_LOCATION     1
-#define TEX_COORD_LOCATION  2
-#define TANGENT_LOCATION    3
-#define BINORM_LOCATION     4
+//#define POSITION_LOCATION   0
+//#define NORMAL_LOCATION     1
+//#define TEX_COORD_LOCATION  2
+//#define TANGENT_LOCATION    3
+//#define BINORM_LOCATION     4
 
 #define ZERO_MEM(a) memset(a, 0, sizeof(a))
 #define ARRAY_SIZE_IN_ELEMENTS(a) (sizeof(a)/sizeof(a[0]))
@@ -46,7 +47,7 @@
 SceneNode::SceneNode(QObject *parent)
     : QObject(parent)
 {
-    m_useVertexArrays = false;
+    m_useVertexArrays = true;
     m_VAO = 0;
     ZERO_MEM(m_VBO);
 }
@@ -111,7 +112,7 @@ bool SceneNode::loadModel(QString path)
 
     bool Ret = false;
 
-    const aiScene* pScene = aiImportFile(path.toStdString().c_str(), aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs);
+    const aiScene* pScene = aiImportFile(path.toStdString().c_str(), aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_FlipUVs);
 
     if (pScene)
     {
@@ -127,6 +128,13 @@ bool SceneNode::loadModel(QString path)
     glBindVertexArray(0);
 
     return Ret;
+}
+
+bool SceneNode::attachMaterial(MaterialData* material)
+{
+    m_material = material;
+
+    return true;
 }
 
 float SceneNode::getScale()
@@ -154,23 +162,23 @@ void SceneNode::bind()
     {
         glBindBuffer(GL_ARRAY_BUFFER, m_VBO[POSITIONS_VB]);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-        glEnableVertexAttribArray(POSITION_LOCATION);
+        glEnableVertexAttribArray(AttrPosition);
 
         glBindBuffer(GL_ARRAY_BUFFER, m_VBO[NORMALS_VB]);
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
-        glEnableVertexAttribArray(NORMAL_LOCATION);
+        glEnableVertexAttribArray(AttrNormal);
 
         glBindBuffer(GL_ARRAY_BUFFER, m_VBO[TEXTURES_VB]);
         glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, 0);
-        glEnableVertexAttribArray(TEX_COORD_LOCATION);
+        glEnableVertexAttribArray(AttrTexCoord);
 
         glBindBuffer(GL_ARRAY_BUFFER, m_VBO[TANGENTS_VB]);
         glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0, 0);
-        glEnableVertexAttribArray(TANGENT_LOCATION);
+        glEnableVertexAttribArray(AttrTangent);
 
         glBindBuffer(GL_ARRAY_BUFFER, m_VBO[BINORMALS_VB]);
         glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 0, 0);
-        glEnableVertexAttribArray(BINORM_LOCATION);
+        glEnableVertexAttribArray(AttrBiNormal);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_VBO[INDICES_VB]);
     }
@@ -218,31 +226,38 @@ bool SceneNode::initFromScene(const aiScene* pScene, const std::string& Filename
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO[POSITIONS_VB]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(m_Positions[0]) * m_Positions.size(), &m_Positions[0], GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(POSITION_LOCATION);
+    glEnableVertexAttribArray(AttrPosition);
+
+    qDebug() << "Normal Data Debug Info";
+    for(uint i = 0; i < m_Normals.size() && i < 16; i++)
+    {
+        Vector3f blabla = m_Normals[i];
+        qDebug() << blabla.x << blabla.x << blabla.x;
+    }
 
     // Normal data
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO[NORMALS_VB]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(m_Normals[0]) * m_Normals.size(), &m_Normals[0], GL_STATIC_DRAW);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(NORMAL_LOCATION);
+    glEnableVertexAttribArray(AttrNormal);
 
     // Texture data
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO[TEXTURES_VB]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(m_TexCoords[0]) * m_TexCoords.size(), &m_TexCoords[0], GL_STATIC_DRAW);
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(TEX_COORD_LOCATION);
+    glEnableVertexAttribArray(AttrTexCoord);
 
     // Tangent data
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO[TANGENTS_VB]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(m_Tangents[0]) * m_Tangents.size(), &m_Tangents[0], GL_STATIC_DRAW);
     glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(TANGENT_LOCATION);
+    glEnableVertexAttribArray(AttrTangent);
 
     // BiNormal data
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO[BINORMALS_VB]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(m_BiNormals[0]) * m_BiNormals.size(), &m_BiNormals[0], GL_STATIC_DRAW);
     glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(BINORM_LOCATION);
+    glEnableVertexAttribArray(AttrBiNormal);
 
     // Index data
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_VBO[INDICES_VB]);
@@ -357,14 +372,14 @@ void SceneNode::generateTangents()
     Vector3f Tangent, BiNormal;
 
     //Clean Up
-    for (int i = 0; i < m_Positions.size(); i++)
+    for (uint i = 0; i < m_Positions.size(); i++)
     {
         m_Tangents[i] = Vector3f(0.0f, 0.0f, 0.0f);
         m_BiNormals[i] = Vector3f(0.0f, 0.0f, 0.0f);
     }
 
     //Generation
-    for (int i = 0; i < m_Indices.size(); i+=3)
+    for (uint i = 0; i < m_Indices.size(); i+=3)
     {
         for (int j = 0; j < 3; j++)
         {
@@ -407,7 +422,7 @@ void SceneNode::generateTangents()
     }
     // Normalizing Result
     Vector3f TmpVec;
-    for (int i = 0; i < m_Positions.size(); i++)
+    for (uint i = 0; i < m_Positions.size(); i++)
     {
         //Normalize Tangent
         TmpVec = Vector3f(m_Tangents[i]);
@@ -428,19 +443,20 @@ void SceneNode::render()
 
 void SceneNode::render(enum DrawingPass pass)
 {
-    if(pass == DrawingPassSolidForced) // || curViewPort->FrustumCheck(Position, Mesh->maxRadius))
-    {
-        //if(!Material->Bind(pass))
-        //	return;
+//    if(pass == DrawingPassSolidForced) // || curViewPort->FrustumCheck(Position, Mesh->maxRadius))
+//    {
+        if(!m_material->bind(pass))
+            return;
 
         bind();
 
-        ShaderData::UniformMatrix4fv(MatModelView, m_modelMatrix);
+        //ShaderData::UniformMatrix4fv(MatModelView, m_modelMatrix);
+        View::insertViewProjectionMatrix();
         //ShaderData::UniformMatrix4fv(MatViewProjection, curViewPort->ViewProjectionMatrix);
         ShaderData::ParseUniformInserts(m_uniformInserts);
 
         glDrawElements(GL_TRIANGLES, m_Positions.size(), GL_UNSIGNED_INT, 0);
-    }
+//    }
 }
 
 
