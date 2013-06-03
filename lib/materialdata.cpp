@@ -19,14 +19,16 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
+#include <QDir>
+
 #include "materialdata.h"
 #include "shaderdata.h"
 
 MaterialData::MaterialData()
 {
     normalShader = ShaderData::FromPlainText(
-                "shaders/normal.vs",
-                "shaders/normal.fs");
+                QString("shaders%1normal.vs").arg(QDir::separator()),
+                QString("shaders%1normal.fs").arg(QDir::separator()));
 }
 
 bool MaterialData::bind(DrawingPass pass)
