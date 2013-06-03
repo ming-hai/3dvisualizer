@@ -85,18 +85,18 @@ enum DataType
 
 struct UniformInsert
 {
-	enum Uniforms unifrom;
+    enum Uniforms uniform;
 	enum DataType type;
 	void* data;
 
     inline UniformInsert(){}
 
 	inline UniformInsert(
-		enum Uniforms mUnifrom,
+        enum Uniforms mUniform,
 		enum DataType mType,
 		void* mData)
 	{
-		unifrom = mUnifrom;
+        uniform = mUniform;
 		type = mType;
 		data = mData;
     }

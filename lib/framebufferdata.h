@@ -54,7 +54,7 @@ public:
 	~FrameBufferData(void);
 	void Initialize();
 	virtual void Bind(bool clear);
-	void SetMultiSampeling(bool value);
+    void SetMultiSampling(bool value);
 };
 
 class BufferSet
@@ -70,8 +70,8 @@ public:
 	FrameBufferData* OutBuffer;
 	FrameBufferData NormalPass;
 	FrameBufferData ScenePass;
-	FrameBufferData DefferedLightmap;
-	FrameBufferData RefletionPass;
+    FrameBufferData DeferredLightmap;
+    FrameBufferData ReflectionPass;
 
 	FrameBufferData Bloom;
 	FrameBufferData BloomB;
@@ -93,7 +93,7 @@ enum FrameBuffer
 	FrameBufferNull,
 	FrameBufferNormalColor,
 	FrameBufferNormalDepth,
-	FrameBufferDefferedLightmap,
+    FrameBufferDeferredLightmap,
 	MyShadowmap,
 	MyInnerShadowMap,
 	FrameBufferScene,

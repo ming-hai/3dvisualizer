@@ -267,13 +267,13 @@ void ShaderData::ParseUniformInserts(QList<UniformInsert*> list)
 		switch (insert->type)
 		{
 		case DataType1f:
-			Uniform1f(insert->unifrom,*(GLfloat*)insert->data);
+            Uniform1f(insert->uniform,*(GLfloat*)insert->data);
 			break;
 		case DataTypeMat4:
-            UniformMatrix4fv(insert->unifrom, *(Matrix4f*)insert->data);
+            UniformMatrix4fv(insert->uniform, *(Matrix4f*)insert->data);
 			break;
 		case DataTypeVector3:
-            Uniform3fv(insert->unifrom,*(Vector3f*)insert->data);
+            Uniform3fv(insert->uniform,*(Vector3f*)insert->data);
 			break;
 		default:
 			break;

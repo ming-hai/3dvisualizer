@@ -69,7 +69,7 @@ void FrameBufferData::Bind(bool clear)
 	}
 }
 
-void FrameBufferData::SetMultiSampeling(bool value)
+void FrameBufferData::SetMultiSampling(bool value)
 {
     MultiSampling = value;
     GLfloat param = MultiSampling ? GL_LINEAR : GL_NEAREST;
@@ -176,17 +176,17 @@ void BufferSet::Initialize()
 	NormalPass.DepthBufferFmt = GL_DEPTH_COMPONENT24;
 	NormalPass.Initialize();
 
-	DefferedLightmap.SizeX = SizeX;
-	DefferedLightmap.SizeY = SizeY;
-	DefferedLightmap.Initialize();
+	DeferredLightmap.SizeX = SizeX;
+	DeferredLightmap.SizeY = SizeY;
+	DeferredLightmap.Initialize();
 
 	ScenePass.SizeX = SizeX;
 	ScenePass.SizeY = SizeY;
 	ScenePass.Initialize();
 
-	RefletionPass.SizeX = SizeX;
-	RefletionPass.SizeY = SizeY;
-	RefletionPass.Initialize();
+	ReflectionPass.SizeX = SizeX;
+	ReflectionPass.SizeY = SizeY;
+	ReflectionPass.Initialize();
 
 	if(EnableSsao)
 	{
@@ -278,8 +278,8 @@ void FbTextureBinder::Bind()
 		case FrameBufferNormalDepth:
 			textureId = CurrentBufferSet->NormalPass.DepthTextureId;
 			break;
-		case FrameBufferDefferedLightmap:
-			textureId = CurrentBufferSet->DefferedLightmap.TextureId;
+		case FrameBufferDeferredLightmap:
+			textureId = CurrentBufferSet->DeferredLightmap.TextureId;
 			break;
 /*
 		case MyShadowmap:
@@ -328,7 +328,7 @@ void FbTextureBinder::Bind()
 			break;
 */
 		case FbDefReflections:
-			textureId = CurrentBufferSet->RefletionPass.TextureId;
+			textureId = CurrentBufferSet->ReflectionPass.TextureId;
 			break;
 		default:
 			break;
