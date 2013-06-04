@@ -134,12 +134,12 @@ void Matrix4f::InitPersProjTransform(const PersProjInfo& p)
 
     m_matrix[2][0] = 0.0f;
     m_matrix[2][1] = 0.0f;
-    m_matrix[2][2] = (-p.zNear - p.zFar)/zRange ;
+    m_matrix[2][2] = (p.zNear + p.zFar)/zRange ;
     m_matrix[2][3] = 2.0f*p.zFar*p.zNear/zRange;
 
     m_matrix[3][0] = 0.0f;
     m_matrix[3][1] = 0.0f;
-    m_matrix[3][2] = 1.0f;
+    m_matrix[3][2] = -1.0f;
     m_matrix[3][3] = 0.0;
 }
 

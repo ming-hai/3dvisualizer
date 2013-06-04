@@ -31,7 +31,30 @@ View::View()
 {
     //Matrix4f translation, rotation, projection;
 
-    viewProjectionMatrix.InitTranslationTransform(0.0f,1.0f,0.0f);
+    PersProjInfo info;
+    info.FOV = 60.0f;
+    info.Height = 1.0f;
+    info.Width  = 1.0f;
+    info.zNear = 0.1f;
+    info.zFar = 100.0f;
+
+    Matrix4f projection, translation, rotation;
+
+//    projection = Matrix4f(
+//        1.0f,0.0f,0.0f,0.0f,
+//        0.0f,1.0f,0.0f,0.0f,
+//        0.0f,0.0f,-1.00200200f,-1.0f,
+//        0.0f,0.0f,-0.200200200f,0.0f);
+
+    Vector3f fromCenter = Vector3f(1.0f,-1.0f,-2.0f);
+
+    projection.InitPersProjTransform(info);
+
+    translation.InitTranslationTransform(fromCenter.x,fromCenter.y,fromCenter.z);
+
+    rotation.InitCameraTransform(-fromCenter,Vector3f(0.0f,1.0f,0.0f));
+
+    viewProjectionMatrix = projection * rotation * translation;
 
     qDebug() << Q_FUNC_INFO << "GENERATED MATRIX";
     qDebug() << viewProjectionMatrix.m_matrix[0][0] << viewProjectionMatrix.m_matrix[0][1] << viewProjectionMatrix.m_matrix[0][2] << viewProjectionMatrix.m_matrix[0][3];

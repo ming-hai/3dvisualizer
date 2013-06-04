@@ -246,13 +246,13 @@ void ShaderData::Uniform2fv(enum Uniforms target, const Vector2f &vec)
 void ShaderData::UniformMatrix4fv(enum Uniforms target, GLfloat* matrix )
 {
 	GLint location = curShader->getLocation(target);
-	glUniformMatrix4fv(location, 1,GL_FALSE, matrix);
+    glUniformMatrix4fv(location, 1,GL_TRUE, matrix);
 }
 
 void ShaderData::UniformMatrix4fv(enum Uniforms target, const Matrix4f &matrix)
 {
 	GLint location = curShader->getLocation(target);
-    glUniformMatrix4fv(location, 1,GL_FALSE, (const GLfloat*)matrix.m_matrix);
+    glUniformMatrix4fv(location, 1,GL_TRUE, (const GLfloat*)matrix.m_matrix);
 
 //    qDebug() << Q_FUNC_INFO << "INSERTING MATRIX";
 //    qDebug() << matrix.m[0][0] << matrix.m[0][1] << matrix.m[0][2] << matrix.m[0][3];
