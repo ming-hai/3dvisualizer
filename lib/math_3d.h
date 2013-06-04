@@ -409,6 +409,19 @@ public:
         return *this = inverted();
     }
 
+    Matrix4f Perspective(const float &fov_rad_y, const float &aspect, const float &near_, const float &far_)
+    {
+#define cotangent(angle) (1.0f / tanf(angle))
+        const float f = float(cotangent(0.5f * fov_rad_y));
+#undef cotangent
+        const float denom = near_ - far_;
+
+        return Matrix4f(f / aspect, 0.0f, 0.0f, 0.0f,
+                        0.0f, f, 0.0f, 0.0f,
+                        0.0f, 0.0f, (far_ + near_) / denom, 2.0f * far_ * near_ / denom,
+                        0.0f, 0.0f, -1.0f, 0.0f);
+    }
+
     void Print() const
     {
         for (int i = 0 ; i < 4 ; i++) {
@@ -438,6 +451,45 @@ struct Quaternion
 Quaternion operator*(const Quaternion& l, const Quaternion& r);
 
 Quaternion operator*(const Quaternion& q, const Vector3f& v);
+
+struct Ray
+{
+    Vector3f Origin;
+    Vector3f Destination;
+    bool Hit;
+    Vector2f HitCoords;
+    float HitMult;
+    float Threshold;
+
+    // 3D Equasion
+    inline Ray(Vector3f origin, Vector3f dest)
+    {
+        Origin = origin;
+        Destination = dest;
+        Hit = false;
+        Threshold = 0.001f;
+    }
+
+    // 2D Equasion
+    inline Ray(Vector2f origin, Vector2f dest)
+    {
+        Origin = Vector3f(origin.x, origin.y ,0.0f);
+        Destination = Vector3f(dest.x, dest.y ,0.0f);
+        Hit = false;
+        Threshold = 0.001f;
+    }
+
+    inline Ray()
+    {
+        Threshold = 0.001f;
+        Hit = false;
+    }
+
+    inline Vector3f HitPos()
+    {
+        return Origin * (1 - HitMult) + Destination * HitMult;
+    }
+};
 
 #endif	/* MATH_3D_H */
 
