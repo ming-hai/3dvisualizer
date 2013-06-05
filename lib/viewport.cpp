@@ -29,7 +29,37 @@ ViewPort* curView;
 
 ViewPort::ViewPort()
 {
-    //Matrix4f translation, rotation, projection;
+    m_Xpos = 1.0;
+    m_Ypos = -1.0;
+    m_Zpos = -2.0;
+
+    setProjectionMatrix();
+}
+
+void ViewPort::bind()
+{
+    curView = this;
+}
+
+void ViewPort::insertViewProjectionMatrix()
+{
+    ShaderData::UniformMatrix4fv(MatViewProjection, curView->viewProjectionMatrix);
+}
+
+void ViewPort::setZ(float z)
+{
+    m_Zpos = z;
+    setProjectionMatrix();
+}
+
+float ViewPort::getZ()
+{
+    return m_Zpos;
+}
+
+void ViewPort::setProjectionMatrix()
+{
+    Matrix4f projection, translation, rotation;
 
     PersProjInfo info;
     info.FOV = 60.0f;
@@ -38,15 +68,13 @@ ViewPort::ViewPort()
     info.zNear = 0.1f;
     info.zFar = 100.0f;
 
-    Matrix4f projection, translation, rotation;
-
 //    projection = Matrix4f(
 //        1.0f,0.0f,0.0f,0.0f,
 //        0.0f,1.0f,0.0f,0.0f,
 //        0.0f,0.0f,-1.00200200f,-1.0f,
 //        0.0f,0.0f,-0.200200200f,0.0f);
 
-    Vector3f fromCenter = Vector3f(1.0f,-1.0f,-2.0f);
+    Vector3f fromCenter = Vector3f(m_Xpos, m_Ypos, m_Zpos);
 
     projection.InitPersProjTransform(info);
 
@@ -61,14 +89,4 @@ ViewPort::ViewPort()
     qDebug() << viewProjectionMatrix.m_matrix[1][0] << viewProjectionMatrix.m_matrix[1][1] << viewProjectionMatrix.m_matrix[1][2] << viewProjectionMatrix.m_matrix[1][3];
     qDebug() << viewProjectionMatrix.m_matrix[2][0] << viewProjectionMatrix.m_matrix[2][1] << viewProjectionMatrix.m_matrix[2][2] << viewProjectionMatrix.m_matrix[2][3];
     qDebug() << viewProjectionMatrix.m_matrix[3][0] << viewProjectionMatrix.m_matrix[3][1] << viewProjectionMatrix.m_matrix[3][2] << viewProjectionMatrix.m_matrix[3][3];
-}
-
-void ViewPort::bind()
-{
-    curView = this;
-}
-
-void ViewPort::insertViewProjectionMatrix()
-{
-    ShaderData::UniformMatrix4fv(MatViewProjection, curView->viewProjectionMatrix);
 }

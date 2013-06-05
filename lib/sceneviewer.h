@@ -106,11 +106,6 @@ private:
     // scale factor for the model to fit in the window
     float m_scaleFactor;
 
-    // Camera Position
-    float m_cameraX;
-    float m_cameraY;
-    float m_cameraZ;
-
     // current rotation angle
     float m_angle;
 

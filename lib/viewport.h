@@ -24,15 +24,20 @@
 
 #include "math_3d.h"
 
-//extern static view* curView;
-
 class ViewPort
 {
 public:
     ViewPort();
     void bind();
     static void insertViewProjectionMatrix();
+
+    void setZ(float z);
+    float getZ();
+
 private:
+    void setProjectionMatrix();
+
+    float m_Xpos, m_Ypos, m_Zpos;
     Matrix4f viewProjectionMatrix;
 };
 

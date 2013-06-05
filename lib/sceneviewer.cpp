@@ -33,10 +33,6 @@ SceneViewer::SceneViewer(QWidget *parent)
 
     m_scaleFactor = 0.0f;
 
-    m_cameraX = 0;
-    m_cameraY = 0;
-    m_cameraZ = 2.0f;
-
     m_angle = 0.f;
 }
 
@@ -118,8 +114,7 @@ QList <SceneNode*> SceneViewer::nodes() const
 
 void SceneViewer::wheelEvent(QWheelEvent *event)
 {
-    Q_UNUSED(event)
-    //m_cameraZ += event->delta() / 100;
+    m_view.setZ(m_view.getZ() + event->delta() / 100);
     repaint();
 }
 
