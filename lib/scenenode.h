@@ -96,6 +96,13 @@ public:
     bool attachMaterial(MaterialData* material);
 
     float getScale();
+    void setXposition(float x);
+    void setYposition(float y);
+    void setZposition(float z);
+
+    float Xposition();
+    float Yposition();
+    float Zposition();
 
     aiVector3D getSceneCenter();
 

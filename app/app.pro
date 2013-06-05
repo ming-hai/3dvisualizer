@@ -55,23 +55,22 @@ win32 {
     }
     INSTALLS += mingw
 	
-	# Assimp library
-	assimp.path = $$3DVIS_OUTPUT_PATH
-	exists($$ASSIMP_DIR/bin/x86/Assimp32.dll) {
-		assimp.files = $$ASSIMP_DIR/bin/x86/Assimp32.dll
-	}
-	INSTALLS += assimp
-	
-	# OpenGL libs
-	gllibs.path = $$3DVIS_OUTPUT_PATH
+    # Assimp library
+    assimp.path = $$3DVIS_OUTPUT_PATH
+    exists($$ASSIMP_DIR/bin/x86/Assimp32.dll) {
+            assimp.files = $$ASSIMP_DIR/bin/x86/Assimp32.dll
+    }
+    INSTALLS += assimp
+
+    # OpenGL libs
+    gllibs.path = $$3DVIS_OUTPUT_PATH
     exists($$(SystemDrive)/MinGW/bin/glew32.dll) {
         gllibs.files += $$(SystemDrive)/MinGW/bin/glew32.dll
     }
     exists($$(SystemDrive)/MinGW/bin/libglut-0.dll) {
         gllibs.files += $$(SystemDrive)/MinGW/bin/libglut-0.dll
     }
-	INSTALLS += gllibs
-	
+    INSTALLS += gllibs
 } else {
     CONFIG += link_pkgconfig
 

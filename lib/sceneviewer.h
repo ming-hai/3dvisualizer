@@ -30,7 +30,7 @@
 #include "framebufferdata.h"
 #include "scenenode.h"
 #include "materialdata.h"
-#include "view.h"
+#include "viewport.h"
 
 class SceneViewer : public QGLWidget
 {
@@ -117,7 +117,7 @@ private:
     GLuint m_sceneList;
 
     MaterialData* m_defaultMaterial;
-    View m_view;
+    ViewPort m_view;
 
 signals:
     void nodeChanged(quint32 id);

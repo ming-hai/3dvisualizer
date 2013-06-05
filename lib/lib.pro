@@ -37,7 +37,7 @@ HEADERS += visualizer3d.h \
     texturedata.h \
     framebufferdata.h \
     materialdata.h \
-    view.h \
+    viewport.h \
     scenenode.h \
     math_3d.h
 
@@ -48,7 +48,7 @@ SOURCES += visualizer3d.cpp \
     texturedata.cpp \
     framebufferdata.cpp \
     materialdata.cpp \
-    view.cpp \
+    viewport.cpp \
     scenenode.cpp \
     math_3d.cpp
 FORMS += objectseditor.ui

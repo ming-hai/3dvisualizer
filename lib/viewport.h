@@ -1,6 +1,6 @@
 /*
   Q Light Controller Plus
-  view.h
+  viewport.h
 
   Copyright (C) Phillip Schulz-Theißen, Massimo Callegari
 
@@ -19,17 +19,17 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#ifndef VIEW_H
-#define VIEW_H
+#ifndef VIEWPORT_H
+#define VIEWPORT_H
 
 #include "math_3d.h"
 
 //extern static view* curView;
 
-class View
+class ViewPort
 {
 public:
-    View();
+    ViewPort();
     void bind();
     static void insertViewProjectionMatrix();
 private:

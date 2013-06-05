@@ -1,6 +1,6 @@
 /*
   Q Light Controller Plus
-  view.cpp
+  viewport.cpp
 
   Copyright (C) Phillip Schulz-Theißen, Massimo Callegari
 
@@ -19,15 +19,15 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#include "view.h"
+#include "viewport.h"
 #include "math_3d.h"
 #include "shaderdata.h"
 
 #include <QDebug>
 
-View* curView;
+ViewPort* curView;
 
-View::View()
+ViewPort::ViewPort()
 {
     //Matrix4f translation, rotation, projection;
 
@@ -63,12 +63,12 @@ View::View()
     qDebug() << viewProjectionMatrix.m_matrix[3][0] << viewProjectionMatrix.m_matrix[3][1] << viewProjectionMatrix.m_matrix[3][2] << viewProjectionMatrix.m_matrix[3][3];
 }
 
-void View::bind()
+void ViewPort::bind()
 {
     curView = this;
 }
 
-void View::insertViewProjectionMatrix()
+void ViewPort::insertViewProjectionMatrix()
 {
     ShaderData::UniformMatrix4fv(MatViewProjection, curView->viewProjectionMatrix);
 }

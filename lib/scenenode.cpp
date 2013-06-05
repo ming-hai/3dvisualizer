@@ -20,7 +20,7 @@
 */
 
 #include "scenenode.h"
-#include "view.h"
+#include "viewport.h"
 
 #include <QDebug>
 
@@ -33,12 +33,6 @@
 #define TANGENTS_VB   3
 #define BINORMALS_VB  4
 #define INDICES_VB    5
-
-//#define POSITION_LOCATION   0
-//#define NORMAL_LOCATION     1
-//#define TEX_COORD_LOCATION  2
-//#define TANGENT_LOCATION    3
-//#define BINORM_LOCATION     4
 
 #define ZERO_MEM(a) memset(a, 0, sizeof(a))
 #define ARRAY_SIZE_IN_ELEMENTS(a) (sizeof(a)/sizeof(a[0]))
@@ -145,6 +139,33 @@ float SceneNode::getScale()
     scale = 1.f / scale;
 
     return scale;
+}
+
+void SceneNode::setXposition(float x)
+{
+}
+
+void SceneNode::setYposition(float y)
+{
+}
+
+void SceneNode::setZposition(float z)
+{
+}
+
+float SceneNode::Xposition()
+{
+    return 0.0; // TODO: Return the correct node position
+}
+
+float SceneNode::Yposition()
+{
+    return 0.0; // TODO: Return the correct node position
+}
+
+float SceneNode::Zposition()
+{
+    return 0.0; // TODO: Return the correct node position
 }
 
 aiVector3D SceneNode::getSceneCenter()
@@ -451,7 +472,7 @@ void SceneNode::render(enum DrawingPass pass)
         bind();
 
         //ShaderData::UniformMatrix4fv(MatModelView, m_modelMatrix);
-        View::insertViewProjectionMatrix();
+        ViewPort::insertViewProjectionMatrix();
         //ShaderData::UniformMatrix4fv(MatViewProjection, curViewPort->ViewProjectionMatrix);
         ShaderData::ParseUniformInserts(m_uniformInserts);
 

@@ -31,7 +31,7 @@
 ObjectsEditor::ObjectsEditor(QWidget *parent, SceneViewer *sv)
   : QWidget(parent)
   , m_scViewer(sv)
-  , m_selectedObject(NULL)
+  , m_selectedNode(NULL)
 {
     Q_ASSERT(m_scViewer != NULL);
     setupUi(this);
@@ -94,45 +94,36 @@ void ObjectsEditor::slotDeleteModel()
 void ObjectsEditor::slotObjectSelected(QTreeWidgetItem *item, int)
 {
     quint32 id = item->text(KObjectsColumnID).toUInt();
-    SceneNode *node = m_scViewer->node(id);
-    if (node != NULL)
+    m_selectedNode = m_scViewer->node(id);
+    if (m_selectedNode != NULL)
     {
-        /*
-        m_selectedObject = node->getModel();
-        m_xposSpin->setValue(m_selectedObject->x());
-        m_yposSpin->setValue(m_selectedObject->y());
-        m_zposSpin->setValue(m_selectedObject->z());
-        */
+        m_xposSpin->setValue(m_selectedNode->Xposition());
+        m_yposSpin->setValue(m_selectedNode->Yposition());
+        m_zposSpin->setValue(m_selectedNode->Zposition());
     }
 }
 
 void ObjectsEditor::slotXpositionChanged(double val)
 {
-    Q_UNUSED(val)
-    /*
-    if (m_selectedObject != NULL)
-        m_selectedObject->setX(val);
-    */
+    if (m_selectedNode != NULL)
+        m_selectedNode->setXposition(val);
+
     m_scViewer->update();
 }
 
 void ObjectsEditor::slotYpositionChanged(double val)
 {
-    Q_UNUSED(val)
-    /*
-    if (m_selectedObject != NULL)
-        m_selectedObject->setY(val);
-    */
+    if (m_selectedNode != NULL)
+        m_selectedNode->setYposition(val);
+
     m_scViewer->update();
 }
 
 void ObjectsEditor::slotZpositionChanged(double val)
 {
-    Q_UNUSED(val)
-    /*
-    if (m_selectedObject != NULL)
-        m_selectedObject->setZ(val);
-    */
+    if (m_selectedNode != NULL)
+        m_selectedNode->setZposition(val);
+
     m_scViewer->update();
 }
 

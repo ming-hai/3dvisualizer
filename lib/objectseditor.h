@@ -35,7 +35,7 @@ public:
 
 private:
     SceneViewer *m_scViewer;
-    const aiScene *m_selectedObject;
+    SceneNode *m_selectedNode;
 
 signals:
 
