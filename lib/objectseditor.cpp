@@ -36,6 +36,8 @@ ObjectsEditor::ObjectsEditor(QWidget *parent, SceneViewer *sv)
     Q_ASSERT(m_scViewer != NULL);
     setupUi(this);
 
+    m_propsToolBox->setEnabled(false);
+
     connect(m_objectsTree, SIGNAL(itemClicked(QTreeWidgetItem*,int)),
             this, SLOT(slotObjectSelected(QTreeWidgetItem*, int)));
 }
@@ -100,6 +102,12 @@ void ObjectsEditor::slotObjectSelected(QTreeWidgetItem *item, int)
         m_xposSpin->setValue(m_selectedNode->Xposition());
         m_yposSpin->setValue(m_selectedNode->Yposition());
         m_zposSpin->setValue(m_selectedNode->Zposition());
+
+        m_xrotationSpin->setValue(m_selectedNode->Xrotation());
+        m_yrotationSpin->setValue(m_selectedNode->Yrotation());
+        m_zrotationSpin->setValue(m_selectedNode->Zrotation());
+
+        m_propsToolBox->setEnabled(true);
     }
 }
 

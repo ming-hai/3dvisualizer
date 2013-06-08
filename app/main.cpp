@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 
     QApplication app(argc, argv);
     Visualizer3D vis;
-    vis.show();
+    vis.showMaximized();
 
     return app.exec();
 }
