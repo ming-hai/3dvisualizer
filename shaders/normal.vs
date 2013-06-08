@@ -6,6 +6,7 @@ in vec3 in_Tangent;
 in vec3 in_BiNormal;
 
 uniform mat4 ModelView;
+uniform mat4 ModelRotation;
 uniform mat4 ViewProjection;
  
 out vec3 vNormal;
@@ -16,7 +17,7 @@ out vec2 vTexCoord;
 void main(void) {
   vTexCoord = in_TexCoord;
  
-  gl_Position = ViewProjection * ModelView * vec4(in_Position.x, in_Position.y, in_Position.z, 1.0);
+  gl_Position = ViewProjection * ModelView * ModelRotation * vec4(in_Position.x, in_Position.y, in_Position.z, 1.0);
  
   //vNormal = (ModelView * vec4(in_Normal,0.0)).xyz;
   vNormal = in_Normal;

@@ -52,7 +52,8 @@ SceneNode::SceneNode(QObject *parent)
     m_nodeRotation.y = 0.0;
     m_nodeRotation.z = 0.0;
 
-    m_modelMatrix.InitIdentity();
+    m_rotationMatrix.InitIdentity();
+    m_translationMatrix.InitIdentity();
 }
 
 SceneNode::~SceneNode()
@@ -153,19 +154,19 @@ float SceneNode::getScale()
 void SceneNode::setXposition(float x)
 {
     m_nodePosition.x = x;
-    m_modelMatrix.InitTranslationTransform(m_nodePosition.x, m_nodePosition.y, m_nodePosition.z);
+    m_translationMatrix.InitTranslationTransform(m_nodePosition.x, m_nodePosition.y, m_nodePosition.z);
 }
 
 void SceneNode::setYposition(float y)
 {
     m_nodePosition.y = y;
-    m_modelMatrix.InitTranslationTransform(m_nodePosition.x, m_nodePosition.y, m_nodePosition.z);
+    m_translationMatrix.InitTranslationTransform(m_nodePosition.x, m_nodePosition.y, m_nodePosition.z);
 }
 
 void SceneNode::setZposition(float z)
 {
     m_nodePosition.z = z;
-    m_modelMatrix.InitTranslationTransform(m_nodePosition.x, m_nodePosition.y, m_nodePosition.z);
+    m_translationMatrix.InitTranslationTransform(m_nodePosition.x, m_nodePosition.y, m_nodePosition.z);
 }
 
 float SceneNode::Xposition()
@@ -519,10 +520,9 @@ void SceneNode::render(enum DrawingPass pass)
 
         bind();
 
-        //m_modelMatrix = m_rotationMatrix * m_modelMatrix;
-        ShaderData::UniformMatrix4fv(MatModelView, m_modelMatrix);
+        ShaderData::UniformMatrix4fv(MatModelView, m_translationMatrix);
+        ShaderData::UniformMatrix4fv(MatModelRotation, m_rotationMatrix);
         ViewPort::insertViewProjectionMatrix();
-        //ShaderData::UniformMatrix4fv(MatViewProjection, curViewPort->ViewProjectionMatrix);
         ShaderData::ParseUniformInserts(m_uniformInserts);
 
         glDrawElements(GL_TRIANGLES, m_Positions.size(), GL_UNSIGNED_INT, 0);

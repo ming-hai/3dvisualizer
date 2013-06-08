@@ -134,8 +134,8 @@ private:
     GLuint m_VAO;
     GLuint m_VBO[6];
 
-    Matrix4f m_modelMatrix;
-    Matrix4f m_translationMatrix, m_rotationMatrix;
+    Matrix4f m_translationMatrix;
+    Matrix4f m_rotationMatrix;
 
     std::vector<Vector3f> m_Positions;
     std::vector<Vector3f> m_Normals;

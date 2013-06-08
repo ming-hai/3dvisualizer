@@ -48,6 +48,7 @@ static QString const UniformsStrings[] = {
 	"ShadowProjection",
 	"InnerShadowProjection",
 	"ModelView",
+    "ModelRotation",
 	"ViewProjection",
 	"Origin",
 	"Size",
