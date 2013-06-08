@@ -115,8 +115,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>96</width>
-          <height>26</height>
+          <width>254</width>
+          <height>190</height>
          </rect>
         </property>
         <attribute name="label">
@@ -182,8 +182,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>252</width>
-          <height>187</height>
+          <width>254</width>
+          <height>190</height>
          </rect>
         </property>
         <attribute name="label">
@@ -195,7 +195,7 @@
            <x>10</x>
            <y>0</y>
            <width>208</width>
-           <height>181</height>
+           <height>185</height>
           </rect>
          </property>
          <layout class="QGridLayout" name="gridLayout_2">
@@ -323,8 +323,8 @@
    <slot>slotAddModel()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>44</x>
-     <y>38</y>
+     <x>50</x>
+     <y>32</y>
     </hint>
     <hint type="destinationlabel">
      <x>124</x>
@@ -387,12 +387,60 @@
    <slot>slotDeleteModel()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>73</x>
-     <y>33</y>
+     <x>121</x>
+     <y>32</y>
     </hint>
     <hint type="destinationlabel">
      <x>43</x>
      <y>802</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>m_xrotationSpin</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>ObjectsEditor</receiver>
+   <slot>slotXrotationChanged(double)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>175</x>
+     <y>472</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>104</x>
+     <y>741</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>m_yrotationSpin</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>ObjectsEditor</receiver>
+   <slot>slotYrotationChanged(double)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>170</x>
+     <y>495</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>145</x>
+     <y>735</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>m_zrotationSpin</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>ObjectsEditor</receiver>
+   <slot>slotZrotationChanged(double)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>177</x>
+     <y>526</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>137</x>
+     <y>277</y>
     </hint>
    </hints>
   </connection>
@@ -402,5 +450,8 @@
   <slot>slotYpositionChanged(double)</slot>
   <slot>slotZpositionChanged(double)</slot>
   <slot>slotDeleteModel()</slot>
+  <slot>slotXrotationChanged(double)</slot>
+  <slot>slotYrotationChanged(double)</slot>
+  <slot>slotZrotationChanged(double)</slot>
  </slots>
 </ui>

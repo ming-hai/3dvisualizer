@@ -127,4 +127,28 @@ void ObjectsEditor::slotZpositionChanged(double val)
     m_scViewer->update();
 }
 
+void ObjectsEditor::slotXrotationChanged(double val)
+{
+    if (m_selectedNode != NULL)
+        m_selectedNode->setXrotation(val);
+
+    m_scViewer->update();
+}
+
+void ObjectsEditor::slotYrotationChanged(double val)
+{
+    if (m_selectedNode != NULL)
+        m_selectedNode->setYrotation(val);
+
+    m_scViewer->update();
+}
+
+void ObjectsEditor::slotZrotationChanged(double val)
+{
+    if (m_selectedNode != NULL)
+        m_selectedNode->setZrotation(val);
+
+    m_scViewer->update();
+}
+
 

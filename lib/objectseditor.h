@@ -47,6 +47,10 @@ public slots:
     void slotXpositionChanged(double val);
     void slotYpositionChanged(double val);
     void slotZpositionChanged(double val);
+
+    void slotXrotationChanged(double val);
+    void slotYrotationChanged(double val);
+    void slotZrotationChanged(double val);
     
 };
 

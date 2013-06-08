@@ -96,6 +96,8 @@ public:
     bool attachMaterial(MaterialData* material);
 
     float getScale();
+
+    // Node position
     void setXposition(float x);
     void setYposition(float y);
     void setZposition(float z);
@@ -104,14 +106,21 @@ public:
     float Yposition();
     float Zposition();
 
+    // Node rotation
+    void setXrotation(float x);
+    void setYrotation(float y);
+    void setZrotation(float z);
+
+    float Xrotation();
+    float Yrotation();
+    float Zrotation();
+
     aiVector3D getSceneCenter();
 
     void bind();
 
     void render();
     void render(enum DrawingPass pass);
-
-
 
 private:
     bool initFromScene(const aiScene* pScene, const std::string& Filename);
@@ -126,6 +135,7 @@ private:
     GLuint m_VBO[6];
 
     Matrix4f m_modelMatrix;
+    Matrix4f m_translationMatrix, m_rotationMatrix;
 
     std::vector<Vector3f> m_Positions;
     std::vector<Vector3f> m_Normals;
@@ -155,7 +165,7 @@ private:
     //std::vector<Texture*> m_Textures;
 
     aiVector3D m_sceneMin, m_sceneMax;
-    aiVector3D m_sceneCenter;
+    Vector3f m_nodePosition, m_nodeRotation;
 
     MaterialData* m_material;
 

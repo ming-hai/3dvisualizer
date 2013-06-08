@@ -44,6 +44,15 @@ SceneNode::SceneNode(QObject *parent)
     m_useVertexArrays = true;
     m_VAO = 0;
     ZERO_MEM(m_VBO);
+    m_nodePosition.x = 0.0;
+    m_nodePosition.y = 0.0;
+    m_nodePosition.z = 0.0;
+
+    m_nodeRotation.x = 0.0;
+    m_nodeRotation.y = 0.0;
+    m_nodeRotation.z = 0.0;
+
+    m_modelMatrix.InitIdentity();
 }
 
 SceneNode::~SceneNode()
@@ -143,29 +152,68 @@ float SceneNode::getScale()
 
 void SceneNode::setXposition(float x)
 {
+    m_nodePosition.x = x;
+    m_modelMatrix.InitTranslationTransform(m_nodePosition.x, m_nodePosition.y, m_nodePosition.z);
 }
 
 void SceneNode::setYposition(float y)
 {
+    m_nodePosition.y = y;
+    m_modelMatrix.InitTranslationTransform(m_nodePosition.x, m_nodePosition.y, m_nodePosition.z);
 }
 
 void SceneNode::setZposition(float z)
 {
+    m_nodePosition.z = z;
+    m_modelMatrix.InitTranslationTransform(m_nodePosition.x, m_nodePosition.y, m_nodePosition.z);
 }
 
 float SceneNode::Xposition()
 {
-    return 0.0; // TODO: Return the correct node position
+    return m_nodePosition.x;
 }
 
 float SceneNode::Yposition()
 {
-    return 0.0; // TODO: Return the correct node position
+    return m_nodePosition.y;
 }
 
 float SceneNode::Zposition()
 {
-    return 0.0; // TODO: Return the correct node position
+    return m_nodePosition.z;
+}
+
+void SceneNode::setXrotation(float x)
+{
+    m_nodeRotation.x = x;
+    m_rotationMatrix.InitRotateTransform(m_nodeRotation.x, m_nodeRotation.y, m_nodeRotation.z);
+}
+
+void SceneNode::setYrotation(float y)
+{
+    m_nodeRotation.y = y;
+    m_rotationMatrix.InitRotateTransform(m_nodeRotation.x, m_nodeRotation.y, m_nodeRotation.z);
+}
+
+void SceneNode::setZrotation(float z)
+{
+    m_nodeRotation.z = z;
+    m_rotationMatrix.InitRotateTransform(m_nodeRotation.x, m_nodeRotation.y, m_nodeRotation.z);
+}
+
+float SceneNode::Xrotation()
+{
+    return m_nodeRotation.x;
+}
+
+float SceneNode::Yrotation()
+{
+    return m_nodeRotation.y;
+}
+
+float SceneNode::Zrotation()
+{
+    return m_nodeRotation.z;
 }
 
 aiVector3D SceneNode::getSceneCenter()
@@ -471,7 +519,8 @@ void SceneNode::render(enum DrawingPass pass)
 
         bind();
 
-        //ShaderData::UniformMatrix4fv(MatModelView, m_modelMatrix);
+        //m_modelMatrix = m_rotationMatrix * m_modelMatrix;
+        ShaderData::UniformMatrix4fv(MatModelView, m_modelMatrix);
         ViewPort::insertViewProjectionMatrix();
         //ShaderData::UniformMatrix4fv(MatViewProjection, curViewPort->ViewProjectionMatrix);
         ShaderData::ParseUniformInserts(m_uniformInserts);
