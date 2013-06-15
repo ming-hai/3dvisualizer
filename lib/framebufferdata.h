@@ -1,6 +1,6 @@
 /*
   Q Light Controller Plus
-  shaderdata.h
+  framebufferdata.h
 
   Copyright (C) Phillip Schulz-Theißen, Massimo Callegari
 

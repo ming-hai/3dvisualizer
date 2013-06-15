@@ -35,6 +35,7 @@ HEADERS += visualizer3d.h \
     objectseditor.h \
     shaderdata.h \
     texturedata.h \
+    filter2D.h \
     framebufferdata.h \
     materialdata.h \
     viewport.h \
@@ -46,6 +47,7 @@ SOURCES += visualizer3d.cpp \
     objectseditor.cpp \
     shaderdata.cpp \
     texturedata.cpp \
+    filter2d.cpp \
     framebufferdata.cpp \
     materialdata.cpp \
     viewport.cpp \

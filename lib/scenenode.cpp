@@ -134,6 +134,39 @@ bool SceneNode::loadModel(QString path)
     return Ret;
 }
 
+bool SceneNode::loadModelFromBuffer(QString buffer)
+{
+    // Release the previously loaded mesh (if it exists)
+    clear();
+
+    // Create the VAO
+    glGenVertexArrays(1, &m_VAO);
+    glBindVertexArray(m_VAO);
+
+    // Create the buffers for the vertices attributes
+    glGenBuffers(ARRAY_SIZE_IN_ELEMENTS(m_VBO), m_VBO);
+
+    bool Ret = false;
+
+    const aiScene* pScene = aiImportFileFromMemory(buffer.toAscii().data(), buffer.length(),
+                                                   aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_FlipUVs, NULL);
+
+    if (pScene)
+    {
+        Ret = initFromScene(pScene, "");
+    }
+    else
+    {
+        qDebug() << Q_FUNC_INFO << "Cannot load model from buffer !!";
+        Ret = false;
+    }
+
+    // Make sure the VAO is not changed from the outside
+    glBindVertexArray(0);
+
+    return Ret;
+}
+
 bool SceneNode::attachMaterial(MaterialData* material)
 {
     m_material = material;
@@ -220,6 +253,11 @@ float SceneNode::Zrotation()
 aiVector3D SceneNode::getSceneCenter()
 {
     return m_sceneMin;
+}
+
+quint32 SceneNode::getSize()
+{
+    return m_Positions.size();
 }
 
 void SceneNode::bind()

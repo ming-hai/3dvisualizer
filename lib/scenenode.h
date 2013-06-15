@@ -93,6 +93,7 @@ protected:
      *****************************************************************************/
 public:
     bool loadModel(QString path);
+    bool loadModelFromBuffer(QString buffer);
     bool attachMaterial(MaterialData* material);
 
     float getScale();
@@ -116,6 +117,8 @@ public:
     float Zrotation();
 
     aiVector3D getSceneCenter();
+
+    quint32 getSize();
 
     void bind();
 
