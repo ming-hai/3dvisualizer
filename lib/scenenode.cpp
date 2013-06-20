@@ -23,6 +23,7 @@
 #include "viewport.h"
 
 #include <QDebug>
+#include <QDir>
 
 #define aisgl_min(x,y) (x<y?x:y)
 #define aisgl_max(x,y) (y>x?y:x)
@@ -54,6 +55,8 @@ SceneNode::SceneNode(QObject *parent)
 
     m_rotationMatrix.InitIdentity();
     m_translationMatrix.InitIdentity();
+
+    m_modelBaseDirectory = "";
 }
 
 SceneNode::~SceneNode()
@@ -120,7 +123,9 @@ bool SceneNode::loadModel(QString path)
 
     if (pScene)
     {
-        Ret = initFromScene(pScene, path.toStdString().c_str());
+        QFileInfo info(path);
+        m_modelBaseDirectory = info.absoluteFilePath();
+        Ret = initFromScene(pScene);
     }
     else
     {
@@ -153,7 +158,7 @@ bool SceneNode::loadModelFromBuffer(QString buffer)
 
     if (pScene)
     {
-        Ret = initFromScene(pScene, "");
+        Ret = initFromScene(pScene);
     }
     else
     {
@@ -292,10 +297,12 @@ void SceneNode::bind()
     }
 }
 
-bool SceneNode::initFromScene(const aiScene* pScene, const std::string& Filename)
+bool SceneNode::initFromScene(const aiScene* pScene)
 {
     m_Entries.resize(pScene->mNumMeshes);
-    //m_Textures.resize(pScene->mNumMaterials);
+    m_Textures.resize(pScene->mNumMaterials);
+
+    qDebug() << "Number of entries found: " << pScene->mNumMeshes;
 
     unsigned int NumVertices = 0;
     unsigned int NumIndices = 0;
@@ -303,6 +310,7 @@ bool SceneNode::initFromScene(const aiScene* pScene, const std::string& Filename
     // Initialize the meshes in the scene one by one
     for (unsigned int i = 0 ; i < m_Entries.size() ; i++)
     {
+        //qDebug() << "Mesh name: " << QLatin1String(pScene->mMeshes[i]->mName.data);
         m_Entries[i].MaterialIndex = pScene->mMeshes[i]->mMaterialIndex;
         m_Entries[i].NumIndices = pScene->mMeshes[i]->mNumFaces * 3;
         m_Entries[i].BaseVertex = NumVertices;
@@ -322,26 +330,15 @@ bool SceneNode::initFromScene(const aiScene* pScene, const std::string& Filename
 
     // Initialize the meshes in the scene one by one
     for (unsigned int i = 0 ; i < m_Entries.size() ; i++)
-    {
-        const aiMesh* paiMesh = pScene->mMeshes[i];
-        initMesh(paiMesh);
-    }
+        initMesh(pScene->mMeshes[i]);
 
-    //if (!InitMaterials(pScene, Filename))
-    //    return false;
+    initMaterials(pScene);
 
     // Position data
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO[POSITIONS_VB]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(m_Positions[0]) * m_Positions.size(), &m_Positions[0], GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(AttrPosition);
-
-    qDebug() << "Normal Data Debug Info";
-    for(uint i = 0; i < m_Normals.size() && i < 16; i++)
-    {
-        Vector3f blabla = m_Normals[i];
-        qDebug() << blabla.x << blabla.x << blabla.x;
-    }
 
     // Normal data
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO[NORMALS_VB]);
@@ -399,66 +396,48 @@ void SceneNode::initMesh(const aiMesh* paiMesh)
         m_Indices.push_back(Face.mIndices[1]);
         m_Indices.push_back(Face.mIndices[2]);
     }
-
-
 }
-/*
-bool SceneNode::initMaterials(const aiScene* pScene, const std::string& Filename)
+
+bool SceneNode::initMaterials(const aiScene* pScene)
 {
-    // Extract the directory part from the file name
-    std::string::size_type SlashIndex = Filename.find_last_of("/");
-    std::string Dir;
-
-    if (SlashIndex == std::string::npos) {
-        Dir = ".";
-    }
-    else if (SlashIndex == 0) {
-        Dir = "/";
-    }
-    else {
-        Dir = Filename.substr(0, SlashIndex);
-    }
-
-    bool Ret = true;
-
     // Initialize the materials
     for (unsigned int i = 0 ; i < pScene->mNumMaterials ; i++)
     {
         const aiMaterial* pMaterial = pScene->mMaterials[i];
+        bool ret = false;
 
-        m_Textures[i] = NULL;
+        m_Textures[i] = new TextureData();
+        aiColor4D clr;
 
-        if (pMaterial->GetTextureCount(aiTextureType_DIFFUSE) > 0) {
+        aiString aName;
+        if (pMaterial->Get(AI_MATKEY_NAME, aName) == aiReturn_SUCCESS && aName.length > 0)
+            qDebug() << "Material name:"  << QLatin1String(aName.data);
+
+        if(pMaterial->Get(AI_MATKEY_COLOR_AMBIENT, clr) == aiReturn_SUCCESS)
+            ret = m_Textures[i]->loadMaterial(QColor::fromRgbF(clr.r, clr.g, clr.b, clr.a));
+
+        if(pMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, clr) == aiReturn_SUCCESS)
+            ret = m_Textures[i]->loadMaterial(QColor::fromRgbF(clr.r, clr.g, clr.b, clr.a));
+
+        if (pMaterial->GetTextureCount(aiTextureType_DIFFUSE) > 0)
+        {
             aiString Path;
 
-            if (pMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &Path, NULL, NULL, NULL, NULL, NULL) == AI_SUCCESS) {
-                std::string FullPath = Dir + "/" + Path.data;
-                m_Textures[i] = new Texture(GL_TEXTURE_2D, FullPath.c_str());
-
-                if (!m_Textures[i]->Load()) {
-                    printf("Error loading texture '%s'\n", FullPath.c_str());
-                    delete m_Textures[i];
-                    m_Textures[i] = NULL;
-                    Ret = false;
-                }
-                else {
-                    printf("Loaded texture '%s'\n", FullPath.c_str());
-                }
+            if (pMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &Path, NULL, NULL, NULL, NULL, NULL) == AI_SUCCESS)
+            {
+                QString textPath = m_modelBaseDirectory + QDir::separator() + Path.data;
+                ret = m_Textures[i]->loadTexture(textPath);
             }
         }
-
-        // Load a white texture in case the model does not include its own texture
-        if (!m_Textures[i])
+        if (ret == false)
         {
-            m_Textures[i] = new Texture(GL_TEXTURE_2D, "./white.png");
-
-            Ret = m_Textures[i]->Load();
+            delete m_Textures[i];
+            m_Textures[i] = NULL;
         }
     }
 
-    return Ret;
+    return true;
 }
-*/
 
 void SceneNode::generateTangents()
 {

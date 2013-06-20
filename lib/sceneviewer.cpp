@@ -159,14 +159,6 @@ void SceneViewer::initializeGL()
 void SceneViewer::resizeGL(int width, int height)
 {
     //qDebug() << Q_FUNC_INFO;
-    //Q_UNUSED(width)
-    //Q_UNUSED(height)
-/*
-    const double aspectRatio = (float) width / height, fieldOfView = 45.0;
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluPerspective(fieldOfView, aspectRatio, 0.0, 2000.0);  // Znear and Zfar
-*/
     glViewport(0, 0, width, height);
     mainBufferSet->SizeX = width;
     mainBufferSet->SizeY = height;

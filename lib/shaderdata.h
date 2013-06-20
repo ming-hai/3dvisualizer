@@ -89,7 +89,7 @@ enum DrawingPass
     DrawingPassSolid,
     DrawingPassSolidForced,
     DrawingPassTransparent,
-    DrawingPassDeffered,
+    DrawingPassDeferred,
     DrawingPassShadow
 };
 

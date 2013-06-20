@@ -23,9 +23,7 @@
 #define TEXTUREDATA_H
 
 #include <QString>
-
-#include "GL/glew.h"
-#include "GL/glut.h"
+#include <QColor>
 
 #include "shaderdata.h"
 
@@ -33,17 +31,22 @@
 
 class TextureData
 {
-private:
-	GLuint textureId;
 public:
-    QString Name;
 	TextureData(void);
 	~TextureData(void);
-    //static TextureData* FromDDS(char* source);
-	enum Uniforms Target;
-	virtual void Bind(void);
-	void CreateData();
+
+    void initData();
+    bool loadMaterial(QColor color);
+    bool loadTexture(QString path);
+
 	TextureData* SetTarget(enum Uniforms);
+    virtual void Bind(void);
+
+    enum Uniforms Target;
+    QString Name;
+
+private:
+    GLuint textureId;
 };
 
 #endif // TEXTUREDATA_H

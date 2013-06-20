@@ -55,7 +55,7 @@ void ObjectsEditor::slotAddModel()
     dialog.setAcceptMode(QFileDialog::AcceptOpen);
 
     //QString modelsDir = QDir::toNativeSeperators(QDir::homePath());
-    QString filter = tr("All 3D Models (*.3ds *.obj)");
+    QString filter = tr("All 3D Models (*.3ds *.obj *.dae *.blend *.x *.lwo *.lws *.ac)");
 
     dialog.setFilter(filter);
 
@@ -90,6 +90,9 @@ void ObjectsEditor::slotDeleteModel()
         quint32 id = item->text(KObjectsColumnID).toUInt();
         m_scViewer->deleteNode(id);
         m_scViewer->update();
+        int idx = m_objectsTree->indexOfTopLevelItem(item);
+        m_objectsTree->takeTopLevelItem(idx);
+        delete item;
     }
 }
 

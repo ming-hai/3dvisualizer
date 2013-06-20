@@ -30,10 +30,12 @@
 
 #include <assimp/cimport.h>
 #include <assimp/scene.h>
+#include <assimp/material.h>
 #include <assimp/postprocess.h>
 
 #include "math_3d.h"
 #include "shaderdata.h"
+#include "texturedata.h"
 #include "materialdata.h"
 
 #define INVALID_MATERIAL 0xFFFFFFFF
@@ -126,9 +128,9 @@ public:
     void render(enum DrawingPass pass);
 
 private:
-    bool initFromScene(const aiScene* pScene, const std::string& Filename);
+    bool initFromScene(const aiScene* pScene);
     void initMesh(const aiMesh* paiMesh);
-    bool initMaterials(const aiScene* pScene, const std::string& Filename);
+    bool initMaterials(const aiScene* pScene);
     void generateTangents();
     void clear();
 
@@ -165,11 +167,12 @@ private:
     };
 
     std::vector<MeshEntry> m_Entries;
-    //std::vector<Texture*> m_Textures;
+    std::vector<TextureData*> m_Textures;
 
     aiVector3D m_sceneMin, m_sceneMax;
     Vector3f m_nodePosition, m_nodeRotation;
 
+    QString m_modelBaseDirectory;
     MaterialData* m_material;
 
 signals:

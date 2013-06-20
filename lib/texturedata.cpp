@@ -24,7 +24,7 @@
 #include "texturedata.h"
 //#include "DDSLoader.h"
 
-int CurTexUnit;
+int CurTexUnit = 0;
 
 //TextureData* TextureCache[4096];
 //char* TextureNames[4096];
@@ -42,7 +42,7 @@ TextureData::TextureData(void)
     Textures.append(this);
 }
 
-void TextureData::CreateData()
+void TextureData::initData()
 {
 	// allocate a texture name
 	glGenTextures( 1, &textureId );
@@ -53,7 +53,21 @@ void TextureData::CreateData()
 	// set the magnification filter
 	glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 	// enable anisotropic filtering
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, Anisotropic);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, Anisotropic);
+}
+
+bool TextureData::loadMaterial(QColor color)
+{
+    initData();
+    quint8 mat[4] = { color.red(), color.green(), color.blue(), color.alpha() };
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, (void *)mat);
+    return true;
+}
+
+bool TextureData::loadTexture(QString path)
+{
+    initData();
+    return false;
 }
 
 TextureData::~TextureData(void)
