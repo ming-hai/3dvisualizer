@@ -28,8 +28,9 @@
 #include <QGLWidget>
 
 #include "framebufferdata.h"
-#include "scenenode.h"
 #include "materialdata.h"
+#include "scenenode.h"
+#include "filter2D.h"
 #include "viewport.h"
 
 class SceneViewer : public QGLWidget
@@ -103,6 +104,7 @@ protected:
 
 private:
     BufferSet* mainBufferSet;
+    Filter2D* m_filter2D;
     // scale factor for the model to fit in the window
     float m_scaleFactor;
 
