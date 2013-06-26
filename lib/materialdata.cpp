@@ -29,6 +29,7 @@ MaterialData::MaterialData(QString shaderName)
     m_shader = ShaderData::FromPlainText(
                 QString("shaders%1%2.vs").arg(QDir::separator()).arg(shaderName),
                 QString("shaders%1%2.fs").arg(QDir::separator()).arg(shaderName));
+    m_isTransparent = false;
 }
 
 bool MaterialData::addTexture(TextureData *tex)
@@ -37,8 +38,16 @@ bool MaterialData::addTexture(TextureData *tex)
     return true;
 }
 
+void MaterialData::setTransparent(bool enable)
+{
+    m_isTransparent = enable;
+}
+
 bool MaterialData::bind(enum DrawingPass pass)
 {
+    if((pass == DrawingPassTransparent) != m_isTransparent)
+        return false;
+
     m_shader->Bind();
 
     //ShaderData::Uniform2fv(VecRenderSize,CurRenderDim);

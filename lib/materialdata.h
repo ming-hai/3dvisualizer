@@ -32,11 +32,14 @@ public:
 
     bool addTexture(TextureData *tex);
 
+    void setTransparent(bool enable);
+
     bool bind(enum DrawingPass pass);
 
 private:
     ShaderData* m_shader;
     QList<TextureData*> m_textures;
+    bool m_isTransparent;
 };
 
 #endif // MATERIALDATA_H
