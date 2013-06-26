@@ -71,7 +71,7 @@ quint32 SceneViewer::addNode(QString path, quint32 id)
             delete node;
             return SceneNode::invalidId();
         }
-        node->attachMaterial(m_defaultMaterial);
+        node->attachMaterial(m_normalsMaterial);
 
         m_nodes[id] = node;
         node->setID(id);
@@ -150,7 +150,9 @@ void SceneViewer::initializeGL()
     mainBufferSet->Initialize();
 
     // Load Default material
-    m_defaultMaterial = new MaterialData();
+    m_normalsMaterial = new MaterialData("normal");
+    //m_compositeMaterial = new MaterialData("composite");
+    //m_shadowMaterial = MaterialData("shadow");
 
     // Setup filter
     m_filter2D = new Filter2D();
@@ -180,7 +182,7 @@ void SceneViewer::paintGL()
 
         foreach(SceneNode *sn, nodes())
             sn->render();
-        m_filter2D->Draw(m_defaultMaterial);
+        m_filter2D->Draw(m_normalsMaterial);
 #else
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -256,7 +258,7 @@ void SceneViewer::paintGL()
     //Output final image
     mainBufferSet->OutBuffer->Bind(false);
     //mainBufferSet->Bloom.SetMultiSampeling(true);
-    //m_filter2D->Draw(CompositeFilter);
+    //m_filter2D->Draw(m_compositeMaterial);
 
     glBlendFunc(GL_ONE, GL_ONE);
     glEnable(GL_BLEND);

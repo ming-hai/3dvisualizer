@@ -113,7 +113,9 @@ private:
 
     GLuint m_sceneList;
 
-    MaterialData* m_defaultMaterial;
+    MaterialData* m_normalsMaterial;
+    MaterialData* m_compositeMaterial;
+    MaterialData* m_shadowMaterial;
     ViewPort m_view;
 
 signals:

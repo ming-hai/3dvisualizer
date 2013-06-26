@@ -24,15 +24,15 @@
 #include "materialdata.h"
 #include "shaderdata.h"
 
-MaterialData::MaterialData()
+MaterialData::MaterialData(QString shaderName)
 {
-    normalShader = ShaderData::FromPlainText(
-                QString("shaders%1normal.vs").arg(QDir::separator()),
-                QString("shaders%1normal.fs").arg(QDir::separator()));
+    shader = ShaderData::FromPlainText(
+                QString("shaders%1%2.vs").arg(QDir::separator()).arg(shaderName),
+                QString("shaders%1%2.fs").arg(QDir::separator()).arg(shaderName));
 }
 
 bool MaterialData::bind(enum DrawingPass pass)
 {
-    normalShader->Bind();
+    shader->Bind();
     return true;
 }

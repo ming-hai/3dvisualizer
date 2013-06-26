@@ -27,10 +27,10 @@
 class MaterialData
 {
 public:
-    MaterialData();
+    MaterialData(QString shaderName);
     bool bind(enum DrawingPass pass);
 private:
-    ShaderData* normalShader;
+    ShaderData* shader;
 };
 
 #endif // MATERIALDATA_H
