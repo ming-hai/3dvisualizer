@@ -32,15 +32,15 @@
 class TextureData
 {
 public:
-	TextureData(void);
-	~TextureData(void);
+    TextureData();
+    ~TextureData();
 
     void initData();
     bool loadMaterial(QColor color);
     bool loadTexture(QString path);
 
 	TextureData* SetTarget(enum Uniforms);
-    virtual void Bind(void);
+    virtual void bind(void);
 
     enum Uniforms Target;
     QString Name;

@@ -38,6 +38,7 @@
 #define ZERO_MEM(a) memset(a, 0, sizeof(a))
 #define ARRAY_SIZE_IN_ELEMENTS(a) (sizeof(a)/sizeof(a[0]))
 #define GLCheckError() (glGetError() == GL_NO_ERROR)
+#define SAFE_DELETE(p) if (p) { delete p; p = NULL; }
 
 SceneNode::SceneNode(QObject *parent)
     : QObject(parent)
@@ -66,11 +67,10 @@ SceneNode::~SceneNode()
 
 void SceneNode::clear()
 {
-/*
     for (unsigned int i = 0 ; i < m_Textures.size() ; i++) {
         SAFE_DELETE(m_Textures[i]);
     }
-*/
+
     if (m_VBO[0] != 0)
         glDeleteBuffers(ARRAY_SIZE_IN_ELEMENTS(m_VBO), m_VBO);
 
@@ -414,10 +414,16 @@ bool SceneNode::initMaterials(const aiScene* pScene)
             qDebug() << "Material name:"  << QLatin1String(aName.data);
 
         if(pMaterial->Get(AI_MATKEY_COLOR_AMBIENT, clr) == aiReturn_SUCCESS)
+        {
+            //m_Textures[i]->Bind();
             ret = m_Textures[i]->loadMaterial(QColor::fromRgbF(clr.r, clr.g, clr.b, clr.a));
+        }
 
         if(pMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, clr) == aiReturn_SUCCESS)
+        {
+            //m_Textures[i]->Bind();
             ret = m_Textures[i]->loadMaterial(QColor::fromRgbF(clr.r, clr.g, clr.b, clr.a));
+        }
 
         if (pMaterial->GetTextureCount(aiTextureType_DIFFUSE) > 0)
         {

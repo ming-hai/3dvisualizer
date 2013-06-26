@@ -117,7 +117,7 @@ struct FbTextureBinder : TextureData
 	enum Uniforms Target;
 
 	FbTextureBinder(char* target, char* texture);
-	virtual void Bind();
+    virtual void bind();
 private:
     int CurTexUnit;
 };

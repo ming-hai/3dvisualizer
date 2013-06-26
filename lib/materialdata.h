@@ -23,14 +23,20 @@
 #define MATERIALDATA_H
 
 #include "shaderdata.h"
+#include "texturedata.h"
 
 class MaterialData
 {
 public:
     MaterialData(QString shaderName);
+
+    bool addTexture(TextureData *tex);
+
     bool bind(enum DrawingPass pass);
+
 private:
-    ShaderData* shader;
+    ShaderData* m_shader;
+    QList<TextureData*> m_textures;
 };
 
 #endif // MATERIALDATA_H

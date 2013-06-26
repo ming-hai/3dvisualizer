@@ -26,13 +26,25 @@
 
 MaterialData::MaterialData(QString shaderName)
 {
-    shader = ShaderData::FromPlainText(
+    m_shader = ShaderData::FromPlainText(
                 QString("shaders%1%2.vs").arg(QDir::separator()).arg(shaderName),
                 QString("shaders%1%2.fs").arg(QDir::separator()).arg(shaderName));
 }
 
+bool MaterialData::addTexture(TextureData *tex)
+{
+    m_textures.append(tex);
+    return true;
+}
+
 bool MaterialData::bind(enum DrawingPass pass)
 {
-    shader->Bind();
+    m_shader->Bind();
+
+    //ShaderData::Uniform2fv(VecRenderSize,CurRenderDim);
+
+    foreach(TextureData *tex, m_textures)
+        tex->bind();
+
     return true;
 }

@@ -265,7 +265,7 @@ FbTextureBinder::FbTextureBinder(char* target, char* texture)
 	}
 }
 
-void FbTextureBinder::Bind()
+void FbTextureBinder::bind()
 {
 	if(ShaderData::HasUniform(Target))
 	{

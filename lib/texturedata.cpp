@@ -33,7 +33,7 @@ int TextureCachePosition;
 
 float Anisotropic = 16;
 
-TextureData::TextureData(void)
+TextureData::TextureData()
 {
 	//Textures = ListContainer();
     textureId = GLUINT_MAX;
@@ -70,7 +70,7 @@ bool TextureData::loadTexture(QString path)
     return false;
 }
 
-TextureData::~TextureData(void)
+TextureData::~TextureData()
 {
     if(textureId != GLUINT_MAX)
 		glDeleteTextures( 1, &textureId );
@@ -78,7 +78,7 @@ TextureData::~TextureData(void)
     Textures.removeOne(this);
 }
 
-void TextureData::Bind(void)
+void TextureData::bind(void)
 {
 	if(ShaderData::HasUniform(Target))
 	{
