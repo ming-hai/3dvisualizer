@@ -17,6 +17,8 @@ void main(void) {
 	//Using only the geometry normal
 	//vec3 N = vNormal;
 	
-	gl_FragColor.rgb = normalize(vNormal) * 0.5 + 0.5;
+	//gl_FragColor.rgb = normalize(vNormal) * 0.5 + 0.5;
+	gl_FragColor = texture2D(Diffuse, vTexCoord);
+	//gl_FragColor.rg = vTexCoord;
 	gl_FragColor.a = 1;
 }

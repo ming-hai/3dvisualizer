@@ -25,9 +25,6 @@
 #include <QTextStream>
 
 #include "shaderdata.h"
-//#include "TextureData.h"
-
-static ShaderData* curShader;
 
 //Don't forget to update enum Uniforms
 static QString const UniformsStrings[] = {
@@ -69,20 +66,15 @@ static QString const UniformsStrings[] = {
 
 static int const UniformCount = sizeof(UniformsStrings)/sizeof(UniformsStrings[0]);
 
-QList<ShaderData*> Shaders;// = ListContainer();
-
-//ShaderData* ShaderCache[4096];
-//char* ShaderNames[4096];
-int ShaderCachePosition;
+QList<ShaderData*> Shaders;
+static ShaderData* curShader;
 
 //generates a list with all existing Uniforms and their locations
 void ShaderData::generateLocations()
 {
 	UniformLocations = new GLint[UniformCount];
 	for (int i = 0; i < UniformCount; i++)
-	{
         UniformLocations[i] = glGetUniformLocation(shaderprogram, UniformsStrings[i].toAscii().data());
-	}
 }
 
 ShaderData::ShaderData(const char* vertexsource,const char* fragmentsource)
@@ -91,7 +83,7 @@ ShaderData::ShaderData(const char* vertexsource,const char* fragmentsource)
     char *fragmentInfoLog;
 	int IsCompiled_VS, IsCompiled_FS;
 	int maxLength;
-	 
+
     /* Create an empty vertex shader handle */
     vertexshader = glCreateShader(GL_VERTEX_SHADER);
  
@@ -312,7 +304,6 @@ ShaderData::~ShaderData(void)
 void ShaderData::Bind(void)
 {
 	curShader = this;
-    //CurTexUnit = 0;
     glUseProgram(shaderprogram);
 }
 

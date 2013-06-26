@@ -21,7 +21,7 @@
 
 #include "filter2D.h"
 
-Filter2D::Filter2D(void)
+Filter2D::Filter2D(SceneViewer *sv) : SceneNode(sv)
 {
     //Mesh = MeshData::FromObj("screenQuad.obj");
 

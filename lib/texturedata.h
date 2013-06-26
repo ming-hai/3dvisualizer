@@ -29,10 +29,12 @@
 
 #define GLUINT_MAX (GLuint)(1 << 31)
 
+class SceneViewer;
+
 class TextureData
 {
 public:
-    TextureData();
+    TextureData(SceneViewer* sv);
     ~TextureData();
 
     void initData();
@@ -42,10 +44,11 @@ public:
 	TextureData* SetTarget(enum Uniforms);
     virtual void bind(void);
 
+private:
+    SceneViewer *m_sv;
+
     enum Uniforms Target;
     QString Name;
-
-private:
     GLuint textureId;
 };
 

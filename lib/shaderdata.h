@@ -31,7 +31,7 @@
 //Don't forget to update UniformsStrings
 enum Uniforms
 {
-	UniformsNull,
+    UniformsNull,
 	TexDiffuse,
 	TexDiffuse2,
 	TexDiffuse3,
@@ -134,7 +134,7 @@ public:
     static void ParseUniformInserts(QList<UniformInsert *> list);
     static bool HasUniform(enum Uniforms);
 private:
-	GLint* UniformLocations;
+    GLint* UniformLocations;
 	void generateLocations();
 	GLint getLocation(enum Uniforms target);
 	GLuint vertexshader, fragmentshader;

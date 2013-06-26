@@ -50,7 +50,7 @@ bool MaterialData::bind(enum DrawingPass pass)
 
     m_shader->Bind();
 
-    //ShaderData::Uniform2fv(VecRenderSize,CurRenderDim);
+    //ShaderData::Uniform2fv(VecRenderSize, CurRenderDim); // TODO
 
     foreach(TextureData *tex, m_textures)
         tex->bind();

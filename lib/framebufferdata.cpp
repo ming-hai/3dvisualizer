@@ -22,10 +22,10 @@
 #include <QDebug>
 
 #include "framebufferdata.h"
+#include "sceneviewer.h"
 //#include "Sun.h"
 //#include "CubeMap.h"
 
-BufferSet* CurrentBufferSet;
 Vector2f CurRenderDim;
 
 /*********************************************************************
@@ -247,19 +247,22 @@ static QString const BufferNames[] = {
 
 static int const BufferNameCount = sizeof(BufferNames)/sizeof(BufferNames[0]);
 
-FbTextureBinder::FbTextureBinder(char* target, char* texture)
+FbTextureBinder::FbTextureBinder(enum Uniforms target, char* texture, SceneViewer *sv)
 {
-    CurTexUnit = 0;
-	// Assign Uniform Tartget
-	Target = GetUniformEnum(target);
+    m_sv = sv;
+
+    // Assign Uniform Target
+    m_target = target;
+
+    m_bufferSet = m_sv->getBufferSet();
 
 	// Assign Texture Target
-	Texture = FrameBufferNull;
+    m_texture = FrameBufferNull;
 	for (int i = 0; i < BufferNameCount; i++)
 	{
         if(BufferNames[i] == texture)
 		{
-			Texture = (FrameBuffer)i;
+            m_texture = (FrameBuffer)i;
 			break;
 		}
 	}
@@ -267,19 +270,19 @@ FbTextureBinder::FbTextureBinder(char* target, char* texture)
 
 void FbTextureBinder::bind()
 {
-	if(ShaderData::HasUniform(Target))
+    if(ShaderData::HasUniform(m_target))
 	{
 		GLuint textureId = -1;
-		switch (Texture)
+        switch (m_texture)
 		{
 		case FrameBufferNormalColor:
-			textureId = CurrentBufferSet->NormalPass.TextureId;
+            textureId = m_bufferSet->NormalPass.TextureId;
 			break;
 		case FrameBufferNormalDepth:
-			textureId = CurrentBufferSet->NormalPass.DepthTextureId;
+            textureId = m_bufferSet->NormalPass.DepthTextureId;
 			break;
 		case FrameBufferDeferredLightmap:
-			textureId = CurrentBufferSet->DeferredLightmap.TextureId;
+            textureId = m_bufferSet->DeferredLightmap.TextureId;
 			break;
 /*
 		case MyShadowmap:
@@ -290,22 +293,22 @@ void FbTextureBinder::bind()
 			break;
 */
 		case FrameBufferScene:
-			textureId = CurrentBufferSet->ScenePass.TextureId;
+            textureId = m_bufferSet->ScenePass.TextureId;
 			break;
 		case Bloom:
-			textureId = CurrentBufferSet->Bloom.TextureId;
+            textureId = m_bufferSet->Bloom.TextureId;
 			break;
 		case BloomB:
-			textureId = CurrentBufferSet->BloomB.TextureId;
+            textureId = m_bufferSet->BloomB.TextureId;
 			break;
 		case FbSsaoPrepare:
-			textureId = CurrentBufferSet->SsaoPrepare.TextureId;
+            textureId = m_bufferSet->SsaoPrepare.TextureId;
 			break;
 		case FbSsaoPerform:
-			textureId = CurrentBufferSet->SsaoPerform.TextureId;
+            textureId = m_bufferSet->SsaoPerform.TextureId;
 			break;
 		case FbSsaoBlur:
-			textureId = CurrentBufferSet->SsaoBlur.TextureId;
+            textureId = m_bufferSet->SsaoBlur.TextureId;
 			break;
 /*
 		case FbCubemap1:
@@ -328,18 +331,18 @@ void FbTextureBinder::bind()
 			break;
 */
 		case FbDefReflections:
-			textureId = CurrentBufferSet->ReflectionPass.TextureId;
+            textureId = m_bufferSet->ReflectionPass.TextureId;
 			break;
 		default:
 			break;
 		}
 
-        if(textureId != GLUINT_MAX && ShaderData::HasUniform(Target))
+        if(textureId != GLUINT_MAX && ShaderData::HasUniform(m_target))
 		{
-			glActiveTexture(GL_TEXTURE0 + CurTexUnit);
+            glActiveTexture(GL_TEXTURE0 + m_sv->getTextureUnitCount());
 			glBindTexture(GL_TEXTURE_2D, textureId);
-			ShaderData::Uniform1i(Target, CurTexUnit);
-			CurTexUnit++;
+            ShaderData::Uniform1i(m_target, m_sv->getTextureUnitCount());
+            m_sv->increaseTextureUnitCount();
 		}
 	}
 }

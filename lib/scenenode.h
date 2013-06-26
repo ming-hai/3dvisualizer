@@ -40,6 +40,8 @@
 
 #define INVALID_MATERIAL 0xFFFFFFFF
 
+class SceneViewer;
+
 struct Vertex
 {
     Vector3f m_pos;
@@ -60,9 +62,11 @@ class SceneNode : public QObject
 {
     Q_OBJECT
 public:
-    SceneNode(QObject *parent = 0);
+    SceneNode(SceneViewer *sv, QObject *parent = 0);
 
     ~SceneNode();
+
+    SceneViewer* m_sv;
 
     /*****************************************************************************
      * Node ID

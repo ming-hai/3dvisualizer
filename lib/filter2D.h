@@ -27,7 +27,7 @@
 class Filter2D: public SceneNode
 {
 public:
-	Filter2D(void);
+    Filter2D(SceneViewer *sv);
 	~Filter2D(void);
 	void Draw(MaterialData* filterMaterial);
     void Draw(MaterialData* filterMaterial, QList<UniformInsert *> UniformInsterts);

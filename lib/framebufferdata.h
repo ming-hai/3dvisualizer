@@ -24,12 +24,10 @@
 
 #include <QColor>
 
-//#include "Base.h"
 #include "shaderdata.h"
-//#include "GenFunc.h"
 #include "texturedata.h"
 
-//extern vec2 CurRenderDim;
+class SceneViewer;
 
 class FrameBufferData
 {
@@ -86,8 +84,6 @@ public:
 	void Initialize();
 };
 
-extern BufferSet* CurrentBufferSet;
-
 enum FrameBuffer
 {
 	FrameBufferNull,
@@ -111,15 +107,17 @@ enum FrameBuffer
 	FbDefReflections
 };
 
-struct FbTextureBinder : TextureData
+struct FbTextureBinder
 {
-	enum FrameBuffer Texture;
-	enum Uniforms Target;
+    FbTextureBinder(enum Uniforms target, char* texture, SceneViewer *sv);
 
-	FbTextureBinder(char* target, char* texture);
-    virtual void bind();
+    void bind();
+
 private:
-    int CurTexUnit;
+    SceneViewer* m_sv;
+    enum FrameBuffer m_texture;
+    enum Uniforms m_target;
+    BufferSet* m_bufferSet;
 };
 
 #endif // FRAMEBUFFERDATA_H

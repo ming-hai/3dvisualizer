@@ -20,32 +20,24 @@
 */
 
 #include <QList>
+#include <QDebug>
 
 #include "texturedata.h"
-//#include "DDSLoader.h"
-
-int CurTexUnit = 0;
-
-//TextureData* TextureCache[4096];
-//char* TextureNames[4096];
-QList<TextureData*> Textures;
-int TextureCachePosition;
+#include "sceneviewer.h"
 
 float Anisotropic = 16;
 
-TextureData::TextureData()
+TextureData::TextureData(SceneViewer* sv)
 {
-	//Textures = ListContainer();
     textureId = GLUINT_MAX;
-
-	// Add to texture list
-    Textures.append(this);
+    m_sv = sv;
 }
 
 void TextureData::initData()
 {
 	// allocate a texture name
 	glGenTextures( 1, &textureId );
+    qDebug() << "Texture ID:" << textureId;
 	// select our current texture
 	glBindTexture( GL_TEXTURE_2D, textureId );
 	// set the minification filter
@@ -59,7 +51,9 @@ void TextureData::initData()
 bool TextureData::loadMaterial(QColor color)
 {
     initData();
-    quint8 mat[4] = { color.red(), color.green(), color.blue(), color.alpha() };
+    quint8 mat[4] = { (quint8)color.red(), (quint8)color.green(), (quint8)color.blue(), (quint8)color.alpha() };
+    if (color.red() == 0 && color.green() == 0 && color.blue() == 0)
+        mat[0] = mat[1] = mat[2] = 200;
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, (void *)mat);
     return true;
 }
@@ -74,18 +68,16 @@ TextureData::~TextureData()
 {
     if(textureId != GLUINT_MAX)
 		glDeleteTextures( 1, &textureId );
-
-    Textures.removeOne(this);
 }
 
 void TextureData::bind(void)
 {
 	if(ShaderData::HasUniform(Target))
 	{
-		glActiveTexture(GL_TEXTURE0 + CurTexUnit);
+        glActiveTexture(GL_TEXTURE0 + m_sv->getTextureUnitCount());
 		glBindTexture(GL_TEXTURE_2D, textureId);
-		ShaderData::Uniform1i(Target, CurTexUnit);
-		CurTexUnit++;
+        ShaderData::Uniform1i(Target, m_sv->getTextureUnitCount());
+        m_sv->increaseTextureUnitCount();
 	}
 }
 

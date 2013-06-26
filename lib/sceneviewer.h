@@ -102,18 +102,24 @@ protected:
     /** @reimp */
     void wheelEvent(QWheelEvent *event);
 
+public:
+    int getTextureUnitCount();
+
+    void increaseTextureUnitCount();
+
+    BufferSet* getBufferSet();
+
 private:
     BufferSet* mainBufferSet;
     Filter2D* m_filter2D;
-    // scale factor for the model to fit in the window
-    float m_scaleFactor;
+    FbTextureBinder* m_textureBinder;
 
-    // current rotation angle
-    float m_angle;
+    int m_textureUnitCount;
 
     GLuint m_sceneList;
 
     MaterialData* m_normalsMaterial;
+    MaterialData* m_planeMaterial;
     MaterialData* m_compositeMaterial;
     MaterialData* m_shadowMaterial;
     ViewPort m_view;

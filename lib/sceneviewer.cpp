@@ -29,11 +29,8 @@ SceneViewer::SceneViewer(QWidget *parent)
     : QGLWidget(parent)
 {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-    //m_renderer = new GLRenderer();
 
-    m_scaleFactor = 0.0f;
-
-    m_angle = 0.f;
+    m_textureUnitCount = 0;
 }
 
 SceneViewer::~SceneViewer()
@@ -64,7 +61,7 @@ quint32 SceneViewer::addNode(QString path, quint32 id)
     }
     else
     {
-        SceneNode *node = new SceneNode();
+        SceneNode *node = new SceneNode(this);
         // Load the model from the given path
         if (node->loadModel(path) == false)
         {
@@ -118,6 +115,21 @@ void SceneViewer::wheelEvent(QWheelEvent *event)
     repaint();
 }
 
+int SceneViewer::getTextureUnitCount()
+{
+    return m_textureUnitCount;
+}
+
+void SceneViewer::increaseTextureUnitCount()
+{
+    m_textureUnitCount++;
+}
+
+BufferSet *SceneViewer::getBufferSet()
+{
+    return mainBufferSet;
+}
+
 // ********************************* OPENGL reimplemented methods *********************************
 
 void SceneViewer::initializeGL()
@@ -149,13 +161,18 @@ void SceneViewer::initializeGL()
     mainBufferSet->SizeY = height();
     mainBufferSet->Initialize();
 
-    // Load Default material
+    // load shaders
     m_normalsMaterial = new MaterialData("normal");
+    m_normalsMaterial->bind(DrawingPassSolid);
+
+    m_planeMaterial = new MaterialData("plane");
     //m_compositeMaterial = new MaterialData("composite");
     //m_shadowMaterial = MaterialData("shadow");
 
     // Setup filter
-    m_filter2D = new Filter2D();
+    m_filter2D = new Filter2D(this);
+
+    m_textureBinder = new FbTextureBinder(TexDiffuse, "NormalColor", this);
 
     // Setup View
     m_view.bind();
@@ -174,15 +191,21 @@ void SceneViewer::paintGL()
 #if 1
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glEnable(GL_DEPTH_TEST);
-        glEnable(GL_CULL_FACE);
-        glCullFace(GL_BACK);
-        glDepthMask(GL_TRUE);
-        glDepthFunc(GL_LEQUAL);
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glDepthMask(GL_TRUE);
+    glDepthFunc(GL_LEQUAL);
 
-        foreach(SceneNode *sn, nodes())
-            sn->render();
-        m_filter2D->Draw(m_normalsMaterial);
+    mainBufferSet->NormalPass.Bind(true);
+
+    foreach(SceneNode *sn, nodes())
+        sn->render();
+
+    m_textureBinder->bind();
+
+    m_filter2D->Draw(m_planeMaterial);
+
 #else
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -190,10 +213,6 @@ void SceneViewer::paintGL()
     mainBufferSet->NormalPass.Bind(true);
     glEnable(GL_DEPTH_TEST);
     glDisable(GL_BLEND);
-    //glEnable(GL_CULL_FACE);
-    //glCullFace(GL_BACK);
-    //glDepthMask(GL_TRUE);
-    //glDepthFunc(GL_LEQUAL);
 
     foreach(SceneNode *sn, nodes())
         sn->render(DrawingPassDeferred);

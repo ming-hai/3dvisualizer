@@ -19,6 +19,7 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
+#include "sceneviewer.h"
 #include "scenenode.h"
 #include "viewport.h"
 
@@ -40,9 +41,11 @@
 #define GLCheckError() (glGetError() == GL_NO_ERROR)
 #define SAFE_DELETE(p) if (p) { delete p; p = NULL; }
 
-SceneNode::SceneNode(QObject *parent)
+SceneNode::SceneNode(SceneViewer *sv, QObject *parent)
     : QObject(parent)
 {
+    m_sv = sv;
+
     m_useVertexArrays = true;
     m_VAO = 0;
     ZERO_MEM(m_VBO);
@@ -406,7 +409,7 @@ bool SceneNode::initMaterials(const aiScene* pScene)
         const aiMaterial* pMaterial = pScene->mMaterials[i];
         bool ret = false;
 
-        m_Textures[i] = new TextureData();
+        m_Textures[i] = new TextureData(m_sv);
         aiColor4D clr;
 
         aiString aName;
@@ -415,17 +418,13 @@ bool SceneNode::initMaterials(const aiScene* pScene)
 
         if(pMaterial->Get(AI_MATKEY_COLOR_AMBIENT, clr) == aiReturn_SUCCESS)
         {
-            //m_Textures[i]->Bind();
             ret = m_Textures[i]->loadMaterial(QColor::fromRgbF(clr.r, clr.g, clr.b, clr.a));
         }
-
-        if(pMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, clr) == aiReturn_SUCCESS)
+        else if(pMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, clr) == aiReturn_SUCCESS)
         {
-            //m_Textures[i]->Bind();
             ret = m_Textures[i]->loadMaterial(QColor::fromRgbF(clr.r, clr.g, clr.b, clr.a));
         }
-
-        if (pMaterial->GetTextureCount(aiTextureType_DIFFUSE) > 0)
+        else if (pMaterial->GetTextureCount(aiTextureType_DIFFUSE) > 0)
         {
             aiString Path;
 
