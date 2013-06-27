@@ -343,11 +343,23 @@ bool SceneNode::initFromScene(const aiScene* pScene)
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(AttrPosition);
 
+    if (GLCheckError() == false)
+    {
+        qDebug() << "Error in binding position VBO !";
+        return false;
+    }
+
     // Normal data
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO[NORMALS_VB]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(m_Normals[0]) * m_Normals.size(), &m_Normals[0], GL_STATIC_DRAW);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(AttrNormal);
+
+    if (GLCheckError() == false)
+    {
+        qDebug() << "Error in binding normals VBO !";
+        return false;
+    }
 
     // Texture data
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO[TEXTURES_VB]);
@@ -355,11 +367,23 @@ bool SceneNode::initFromScene(const aiScene* pScene)
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(AttrTexCoord);
 
+    if (GLCheckError() == false)
+    {
+        qDebug() << "Error in binding textures VBO !";
+        return false;
+    }
+
     // Tangent data
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO[TANGENTS_VB]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(m_Tangents[0]) * m_Tangents.size(), &m_Tangents[0], GL_STATIC_DRAW);
     glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(AttrTangent);
+
+    if (GLCheckError() == false)
+    {
+        qDebug() << "Error in binding tangents VBO !";
+        return false;
+    }
 
     // BiNormal data
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO[BINORMALS_VB]);
@@ -367,11 +391,23 @@ bool SceneNode::initFromScene(const aiScene* pScene)
     glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(AttrBiNormal);
 
+    if (GLCheckError() == false)
+    {
+        qDebug() << "Error in binding binormals VBO !";
+        return false;
+    }
+
     // Index data
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_VBO[INDICES_VB]);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(m_Indices[0]) * m_Indices.size(), &m_Indices[0], GL_STATIC_DRAW);
 
-    return GLCheckError();
+    if (GLCheckError() == false)
+    {
+        qDebug() << "Error in binding indices VBO !";
+        return false;
+    }
+
+    return true;
 }
 
 void SceneNode::initMesh(const aiMesh* paiMesh)
