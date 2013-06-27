@@ -3,8 +3,8 @@
 # Project created by QtCreator 2013-02-28T17:35:44
 #
 #-------------------------------------------------
-CONFIG   += release
-CONFIG   -= debug
+CONFIG   -= release
+CONFIG   += debug
 QT       += core gui opengl
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets

@@ -151,7 +151,7 @@ private:
     std::vector<Vector2f> m_TexCoords;
     std::vector<Vector3f> m_Tangents;
     std::vector<Vector3f> m_BiNormals;
-    std::vector<unsigned int> m_Indices;
+    std::vector<unsigned long> m_Indices;
 
     QList<UniformInsert*> m_uniformInserts;
 
@@ -164,10 +164,10 @@ private:
             MaterialIndex = INVALID_MATERIAL;
         }
 
-        unsigned int NumIndices;
-        unsigned int BaseVertex;
-        unsigned int BaseIndex;
-        unsigned int MaterialIndex;
+        unsigned long NumIndices;
+        unsigned long BaseVertex;
+        unsigned long BaseIndex;
+        unsigned long MaterialIndex;
     };
 
     std::vector<MeshEntry> m_Entries;

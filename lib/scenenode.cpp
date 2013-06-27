@@ -307,8 +307,8 @@ bool SceneNode::initFromScene(const aiScene* pScene)
 
     qDebug() << "Number of entries found: " << pScene->mNumMeshes;
 
-    unsigned int NumVertices = 0;
-    unsigned int NumIndices = 0;
+    unsigned long NumVertices = 0;
+    unsigned long NumIndices = 0;
 
     // Initialize the meshes in the scene one by one
     for (unsigned int i = 0 ; i < m_Entries.size() ; i++)
@@ -414,15 +414,20 @@ void SceneNode::initMesh(const aiMesh* paiMesh)
 {
     const aiVector3D Zero3D(0.0f, 0.0f, 0.0f);
 
-    // Populate the vertex attribute vectors
-    for (unsigned int i = 0 ; i < paiMesh->mNumVertices ; i++)
-    {
-        const aiVector3D* pPos      = &(paiMesh->mVertices[i]);
-        const aiVector3D* pNormal   = &(paiMesh->mNormals[i]);
-        const aiVector3D* pTexCoord = paiMesh->HasTextureCoords(0) ? &(paiMesh->mTextureCoords[0][i]) : &Zero3D;
+    //qDebug() << "initMesh vertices:" << paiMesh->mNumVertices;
 
-        m_Positions.push_back(Vector3f(pPos->x, pPos->y, pPos->z));
-        m_Normals.push_back(Vector3f(pNormal->x, pNormal->y, pNormal->z));
+    // Populate the vertex attribute vectors
+    for (unsigned int i = 0 ; i < paiMesh->mNumVertices; i++)
+    {
+        const aiVector3D* pPos = &(paiMesh->mVertices[i]);
+        if (pPos)
+            m_Positions.push_back(Vector3f(pPos->x, pPos->y, pPos->z));
+
+        const aiVector3D* pNormal = &(paiMesh->mNormals[i]);
+        if (paiMesh->HasNormals())
+            m_Normals.push_back(Vector3f(pNormal->x, pNormal->y, pNormal->z));
+
+        const aiVector3D* pTexCoord = paiMesh->HasTextureCoords(0) ? &(paiMesh->mTextureCoords[0][i]) : &Zero3D;
         m_TexCoords.push_back(Vector2f(pTexCoord->x, pTexCoord->y));
     }
 
@@ -430,10 +435,23 @@ void SceneNode::initMesh(const aiMesh* paiMesh)
     for (unsigned int i = 0 ; i < paiMesh->mNumFaces ; i++)
     {
         const aiFace& Face = paiMesh->mFaces[i];
-        Q_ASSERT(Face.mNumIndices == 3);
-        m_Indices.push_back(Face.mIndices[0]);
-        m_Indices.push_back(Face.mIndices[1]);
-        m_Indices.push_back(Face.mIndices[2]);
+        //qDebug() << "Number of faces: " << Face.mNumIndices;
+        //Q_ASSERT(Face.mNumIndices == 3);
+        if (Face.mNumIndices == 1)
+        {
+            m_Indices.push_back(Face.mIndices[0]);
+        }
+        else if (Face.mNumIndices == 2)
+        {
+            m_Indices.push_back(Face.mIndices[0]);
+            m_Indices.push_back(Face.mIndices[1]);
+        }
+        else if (Face.mNumIndices == 3)
+        {
+            m_Indices.push_back(Face.mIndices[0]);
+            m_Indices.push_back(Face.mIndices[1]);
+            m_Indices.push_back(Face.mIndices[2]);
+        }
     }
 }
 

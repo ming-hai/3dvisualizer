@@ -4,8 +4,8 @@ LANGUAGE = C++
 TARGET   = qlcplus3dvisualizer
 
 CONFIG  += qt
-CONFIG  += release
-CONFIG  -= debug
+CONFIG  -= release
+CONFIG  += debug
 QT      += core xml gui opengl
 
 # Assimp doesn't have a pkg-config prebuilt package for Windows
