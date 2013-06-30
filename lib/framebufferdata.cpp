@@ -26,8 +26,6 @@
 //#include "Sun.h"
 //#include "CubeMap.h"
 
-Vector2f CurRenderDim;
-
 /*********************************************************************
  * FrameBufferData class
  *********************************************************************/
@@ -57,8 +55,6 @@ void FrameBufferData::Bind(bool clear)
 		// set rendering destination to FBO
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, FboId);
 		glViewport(0, 0, SizeX, SizeY);
-		CurRenderDim.x = SizeX;
-		CurRenderDim.y = SizeY;
 
 		// clear buffers
 		if(clear)
@@ -156,6 +152,35 @@ void FrameBufferData::Initialize()
     qDebug() << "FrameBufferData Initialize";
 }
 
+/*********************************************************************
+ * DefaultFrameBuffer class
+ *********************************************************************/
+
+DefaultFrameBuffer::DefaultFrameBuffer()
+{
+    m_width = 1024;
+    m_height = 768;
+}
+
+void DefaultFrameBuffer::Bind(bool clear)
+{
+    // unbind FBO
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+    glViewport(0, 0, m_width, m_height);
+
+    if(clear)
+    {
+        glClearColor(0.0, 0.0, 0.0, 1.0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    }
+    //glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, 0);
+}
+
+void DefaultFrameBuffer::setSize(int w, int h)
+{
+    m_width = w;
+    m_height = h;
+}
 
 /*********************************************************************
  * BufferSet class
@@ -165,58 +190,58 @@ BufferSet::BufferSet()
 {
 	EnableSsao = false;
 	EnableBloom = false;
-	SizeX = 0;
-	SizeY = 0;
+    SizeX = 0;
+    SizeY = 0;
 }
 
 void BufferSet::Initialize()
 {
-	NormalPass.SizeX = SizeX;
-	NormalPass.SizeY = SizeY;
+    NormalPass.SizeX = SizeX;
+    NormalPass.SizeY = SizeY;
 	NormalPass.DepthBufferFmt = GL_DEPTH_COMPONENT24;
 	NormalPass.Initialize();
 
-	DeferredLightmap.SizeX = SizeX;
-	DeferredLightmap.SizeY = SizeY;
+    DeferredLightmap.SizeX = SizeX;
+    DeferredLightmap.SizeY = SizeY;
 	DeferredLightmap.Initialize();
 
-	ScenePass.SizeX = SizeX;
-	ScenePass.SizeY = SizeY;
+    ScenePass.SizeX = SizeX;
+    ScenePass.SizeY = SizeY;
 	ScenePass.Initialize();
 
-	ReflectionPass.SizeX = SizeX;
-	ReflectionPass.SizeY = SizeY;
+    ReflectionPass.SizeX = SizeX;
+    ReflectionPass.SizeY = SizeY;
 	ReflectionPass.Initialize();
 
 	if(EnableSsao)
 	{
-		Bloom.SizeX = SizeX/4;
-		Bloom.SizeY = SizeY/4;
+        Bloom.SizeX = SizeX/4;
+        Bloom.SizeY = SizeY/4;
 		Bloom.Initialize();
 
-		BloomB.SizeX = SizeX/4;
-		BloomB.SizeY = SizeY/4;
+        BloomB.SizeX = SizeX/4;
+        BloomB.SizeY = SizeY/4;
 		BloomB.Initialize();
 	}
 
 	if(EnableSsao)
 	{
-		SsaoPrepare.SizeX = SizeX;
-		SsaoPrepare.SizeY = SizeY;
+        SsaoPrepare.SizeX = SizeX;
+        SsaoPrepare.SizeY = SizeY;
 		SsaoPrepare.BufferFmt = GL_RGBA16;
 		SsaoPrepare.Initialize();
 
-		SsaoPerform.SizeX = SizeX/4;
-		SsaoPerform.SizeY = SizeY/4;
+        SsaoPerform.SizeX = SizeX/4;
+        SsaoPerform.SizeY = SizeY/4;
 		SsaoPerform.Initialize();
 
-		SsaoBlur.SizeX = SizeX/4;
-		SsaoBlur.SizeY = SizeY/4;
+        SsaoBlur.SizeX = SizeX/4;
+        SsaoBlur.SizeY = SizeY/4;
         SsaoBlur.MultiSampling = true;
 		SsaoBlur.Initialize();
 	}
 
-    //OutBuffer = (FrameBufferData*)&defaultFramebuffer;
+    OutBuffer = new DefaultFrameBuffer(); //(FrameBufferData*)&defaultFramebuffer;
 }
 
 BufferSet::~BufferSet()
@@ -247,7 +272,7 @@ static QString const BufferNames[] = {
 
 static int const BufferNameCount = sizeof(BufferNames)/sizeof(BufferNames[0]);
 
-FbTextureBinder::FbTextureBinder(enum Uniforms target, char* texture, SceneViewer *sv)
+FbTextureBinder::FbTextureBinder(enum Uniforms target, QString texture, SceneViewer *sv)
 {
     m_sv = sv;
 

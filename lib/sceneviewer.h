@@ -112,7 +112,6 @@ public:
 private:
     BufferSet* mainBufferSet;
     Filter2D* m_filter2D;
-    FbTextureBinder* m_textureBinder;
 
     int m_textureUnitCount;
 

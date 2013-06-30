@@ -55,17 +55,31 @@ public:
     void SetMultiSampling(bool value);
 };
 
+//GL window framebuffer
+class DefaultFrameBuffer : FrameBufferData
+{
+public:
+    DefaultFrameBuffer();
+    virtual void Bind(bool clear);
+
+    void setSize(int w, int h);
+
+private:
+    int m_width;
+    int m_height;
+};
+
 class BufferSet
 {
 public:
 	// ShadingOptions
 	bool EnableSsao;
 	bool EnableBloom;
-	int SizeX;
-	int SizeY;
+    int SizeX;
+    int SizeY;
 
 	// Used access result
-	FrameBufferData* OutBuffer;
+    DefaultFrameBuffer* OutBuffer;
 	FrameBufferData NormalPass;
 	FrameBufferData ScenePass;
     FrameBufferData DeferredLightmap;
@@ -81,7 +95,7 @@ public:
 	//Functions
 	BufferSet();
 	~BufferSet();
-	void Initialize();
+    void Initialize();
 };
 
 enum FrameBuffer
@@ -109,7 +123,7 @@ enum FrameBuffer
 
 struct FbTextureBinder
 {
-    FbTextureBinder(enum Uniforms target, char* texture, SceneViewer *sv);
+    FbTextureBinder(enum Uniforms target, QString texture, SceneViewer *sv);
 
     void bind();
 

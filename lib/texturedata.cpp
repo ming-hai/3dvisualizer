@@ -33,6 +33,12 @@ TextureData::TextureData(SceneViewer* sv)
     m_sv = sv;
 }
 
+TextureData::~TextureData()
+{
+    if(textureId != GLUINT_MAX)
+        glDeleteTextures( 1, &textureId );
+}
+
 void TextureData::initData()
 {
 	// allocate a texture name
@@ -62,12 +68,6 @@ bool TextureData::loadTexture(QString path)
 {
     initData();
     return false;
-}
-
-TextureData::~TextureData()
-{
-    if(textureId != GLUINT_MAX)
-		glDeleteTextures( 1, &textureId );
 }
 
 void TextureData::bind(void)

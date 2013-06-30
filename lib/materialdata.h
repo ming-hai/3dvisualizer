@@ -24,11 +24,12 @@
 
 #include "shaderdata.h"
 #include "texturedata.h"
+#include "framebufferdata.h"
 
 class MaterialData
 {
 public:
-    MaterialData(QString shaderName);
+    MaterialData(QString shaderName, SceneViewer *scv);
 
     bool addTexture(TextureData *tex);
 
@@ -38,6 +39,7 @@ public:
 
 private:
     ShaderData* m_shader;
+    FbTextureBinder* m_textureBinder;
     QList<TextureData*> m_textures;
     bool m_isTransparent;
 };

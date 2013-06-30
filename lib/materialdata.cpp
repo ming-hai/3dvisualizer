@@ -22,13 +22,15 @@
 #include <QDir>
 
 #include "materialdata.h"
+#include "sceneviewer.h"
 #include "shaderdata.h"
 
-MaterialData::MaterialData(QString shaderName)
+MaterialData::MaterialData(QString shaderName, SceneViewer* scv)
 {
     m_shader = ShaderData::FromPlainText(
                 QString("shaders%1%2.vs").arg(QDir::separator()).arg(shaderName),
                 QString("shaders%1%2.fs").arg(QDir::separator()).arg(shaderName));
+    m_textureBinder = new FbTextureBinder(TexDiffuse, "NormalColor", scv);
     m_isTransparent = false;
 }
 
@@ -49,6 +51,7 @@ bool MaterialData::bind(enum DrawingPass pass)
         return false;
 
     m_shader->Bind();
+    m_textureBinder->bind();
 
     //ShaderData::Uniform2fv(VecRenderSize, CurRenderDim); // TODO
 

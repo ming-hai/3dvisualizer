@@ -162,17 +162,15 @@ void SceneViewer::initializeGL()
     mainBufferSet->Initialize();
 
     // load shaders
-    m_normalsMaterial = new MaterialData("normal");
+    m_normalsMaterial = new MaterialData("normal", this);
     m_normalsMaterial->bind(DrawingPassSolid);
 
-    m_planeMaterial = new MaterialData("plane");
+    m_planeMaterial = new MaterialData("plane", this);
     //m_compositeMaterial = new MaterialData("composite");
     //m_shadowMaterial = MaterialData("shadow");
 
     // Setup filter
     m_filter2D = new Filter2D(this);
-
-    m_textureBinder = new FbTextureBinder(TexDiffuse, "NormalColor", this);
 
     // Setup View
     m_view.bind();
@@ -184,6 +182,7 @@ void SceneViewer::resizeGL(int width, int height)
     glViewport(0, 0, width, height);
     mainBufferSet->SizeX = width;
     mainBufferSet->SizeY = height;
+    mainBufferSet->OutBuffer->setSize(width, height);
 }
 
 void SceneViewer::paintGL()
@@ -197,12 +196,20 @@ void SceneViewer::paintGL()
     glDepthMask(GL_TRUE);
     glDepthFunc(GL_LEQUAL);
 
-    mainBufferSet->NormalPass.Bind(true);
+    m_textureUnitCount = 0;
 
+    //Draw normals pass
+    mainBufferSet->NormalPass.Bind(true);
     foreach(SceneNode *sn, nodes())
         sn->render();
 
-    m_textureBinder->bind();
+    //Draw solid pass
+    mainBufferSet->ScenePass.Bind(true);
+    foreach(SceneNode *sn, nodes())
+        sn->render(DrawingPassSolid);
+
+    //Output final image
+    mainBufferSet->OutBuffer->Bind(false);
 
     m_filter2D->Draw(m_planeMaterial);
 
