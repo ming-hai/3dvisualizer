@@ -65,9 +65,7 @@ static QString const UniformsStrings[] = {
 };
 
 static int const UniformCount = sizeof(UniformsStrings)/sizeof(UniformsStrings[0]);
-
-QList<ShaderData*> Shaders;
-static ShaderData* curShader;
+static ShaderData *curShader = NULL;
 
 //generates a list with all existing Uniforms and their locations
 void ShaderData::generateLocations()
@@ -169,8 +167,6 @@ ShaderData::ShaderData(const char* vertexsource,const char* fragmentsource)
     generateLocations();
 
 	glUseProgram(0);
-
-    Shaders.append(this);
 }
 
 QString ShaderData::fileToBuffer(QString filename)
@@ -189,16 +185,7 @@ QString ShaderData::fileToBuffer(QString filename)
 
 ShaderData* ShaderData::FromPlainText(QString vertexSource, QString fragmentSource)
 {
-    foreach(ShaderData *shader, Shaders)
-	{
-        if (shader->VertexName == vertexSource &&
-            shader->FragmentName == fragmentSource)
-		{
-            return shader;
-		}
-	}
-
-	/* Read our shaders into the appropriate buffers */
+    /* Read our shaders into the appropriate buffers */
     QString vertexsource = fileToBuffer(vertexSource);
     QString fragmentsource = fileToBuffer(fragmentSource);
 
@@ -211,37 +198,37 @@ ShaderData* ShaderData::FromPlainText(QString vertexSource, QString fragmentSour
 
 void ShaderData::Uniform1i(enum Uniforms target, GLint i)
 {
-	GLint location = curShader->getLocation(target);
+    GLint location = curShader->getLocation(target);
 	glUniform1i(location, i);
 }
 
 void ShaderData::Uniform1f(enum Uniforms target, GLfloat f)
 {
-	GLint location = curShader->getLocation(target);
+    GLint location = curShader->getLocation(target);
 	glUniform1f(location, f);
 }
 
 void ShaderData::Uniform3fv(enum Uniforms target, const Vector3f &vec)
 {
-	GLint location = curShader->getLocation(target);
+    GLint location = curShader->getLocation(target);
     glUniform3f(location, vec.x, vec.y, vec.z);
 }
 
 void ShaderData::Uniform2fv(enum Uniforms target, const Vector2f &vec)
 {
-	GLint location = curShader->getLocation(target);
+    GLint location = curShader->getLocation(target);
     glUniform2f(location, vec.x, vec.y);
 }
 
 void ShaderData::UniformMatrix4fv(enum Uniforms target, GLfloat* matrix )
 {
-	GLint location = curShader->getLocation(target);
+    GLint location = curShader->getLocation(target);
     glUniformMatrix4fv(location, 1,GL_TRUE, matrix);
 }
 
 void ShaderData::UniformMatrix4fv(enum Uniforms target, const Matrix4f &matrix)
 {
-	GLint location = curShader->getLocation(target);
+    GLint location = curShader->getLocation(target);
     glUniformMatrix4fv(location, 1,GL_TRUE, (const GLfloat*)matrix.m_matrix);
 
 //    qDebug() << Q_FUNC_INFO << "INSERTING MATRIX";
@@ -264,7 +251,7 @@ bool ShaderData::HasUniform(enum Uniforms target)
 void ShaderData::ParseUniformInserts(QList<UniformInsert*> list)
 {
     if(list.count() == 0)
-		return;
+        return;
 
     foreach(UniformInsert *insert, list)
 	{
@@ -294,13 +281,11 @@ ShaderData::~ShaderData(void)
     glDeleteProgram(shaderprogram);
     glDeleteShader(vertexshader);
     glDeleteShader(fragmentshader);
-
-    Shaders.removeOne(this);
 }
 
-void ShaderData::Bind(void)
+void ShaderData::bind(void)
 {
-	curShader = this;
+    curShader = this;
     glUseProgram(shaderprogram);
 }
 

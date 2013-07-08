@@ -28,7 +28,6 @@
 #include <QGLWidget>
 
 #include "framebufferdata.h"
-#include "materialdata.h"
 #include "scenenode.h"
 #include "filter2D.h"
 #include "viewport.h"
@@ -88,6 +87,9 @@ protected:
     /** Latest assigned node ID */
     quint32 m_latestNodeId;
 
+    /*********************************************************************
+     * OpenGL
+     *********************************************************************/
 protected:
 
     /** @reimp */
@@ -102,6 +104,9 @@ protected:
     /** @reimp */
     void wheelEvent(QWheelEvent *event);
 
+    /*********************************************************************
+     * Textures counter
+     *********************************************************************/
 public:
     int getTextureUnitCount();
 
@@ -109,7 +114,16 @@ public:
 
     BufferSet* getBufferSet();
 
+    /*********************************************************************
+     * Shaders
+     *********************************************************************/
+public:
+    void loadShaders();
+
 private:
+    ShaderData* m_normalsShader;
+    ShaderData* m_planeShader;
+
     BufferSet* mainBufferSet;
     Filter2D* m_filter2D;
 
@@ -117,10 +131,10 @@ private:
 
     GLuint m_sceneList;
 
-    MaterialData* m_normalsMaterial;
-    MaterialData* m_planeMaterial;
-    MaterialData* m_compositeMaterial;
-    MaterialData* m_shadowMaterial;
+    //MaterialData* m_normalsMaterial;
+    //MaterialData* m_planeMaterial;
+    //MaterialData* m_compositeMaterial;
+    //MaterialData* m_shadowMaterial;
     ViewPort m_view;
 
 signals:

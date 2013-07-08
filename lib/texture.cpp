@@ -22,24 +22,26 @@
 #include <QList>
 #include <QDebug>
 
-#include "texturedata.h"
+#include "texture.h"
 #include "sceneviewer.h"
 
 float Anisotropic = 16;
 
-TextureData::TextureData(SceneViewer* sv)
+Texture::Texture(SceneViewer* sv, ShaderData *shader, QObject *parent)
+    : QObject(parent)
 {
     textureId = GLUINT_MAX;
     m_sv = sv;
+    m_shader = shader;
 }
 
-TextureData::~TextureData()
+Texture::~Texture()
 {
     if(textureId != GLUINT_MAX)
         glDeleteTextures( 1, &textureId );
 }
 
-void TextureData::initData()
+void Texture::initData()
 {
 	// allocate a texture name
 	glGenTextures( 1, &textureId );
@@ -54,7 +56,7 @@ void TextureData::initData()
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, Anisotropic);
 }
 
-bool TextureData::loadMaterial(QColor color)
+bool Texture::loadMaterial(QColor color)
 {
     initData();
     quint8 mat[4] = { (quint8)color.red(), (quint8)color.green(), (quint8)color.blue(), (quint8)color.alpha() };
@@ -64,21 +66,19 @@ bool TextureData::loadMaterial(QColor color)
     return true;
 }
 
-bool TextureData::loadTexture(QString path)
+bool Texture::loadTexture(QString path)
 {
     initData();
     return false;
 }
 
-void TextureData::bind(void)
+void Texture::bind(void)
 {
-	if(ShaderData::HasUniform(Target))
-	{
-        glActiveTexture(GL_TEXTURE0 + m_sv->getTextureUnitCount());
-		glBindTexture(GL_TEXTURE_2D, textureId);
-        ShaderData::Uniform1i(Target, m_sv->getTextureUnitCount());
-        m_sv->increaseTextureUnitCount();
-	}
+    //qDebug() << "Bind texture ID:" << textureId;
+    glActiveTexture(GL_TEXTURE0 + m_sv->getTextureUnitCount());
+    glBindTexture(GL_TEXTURE_2D, textureId);
+    m_shader->Uniform1i(Target, m_sv->getTextureUnitCount());
+    m_sv->increaseTextureUnitCount();
 }
 
 /*
@@ -100,7 +100,7 @@ TextureData* TextureData::FromDDS(char* source)
 }
 */
 
-TextureData* TextureData::SetTarget(enum Uniforms target)
+Texture* Texture::SetTarget(enum Uniforms target)
 {
 	Target = target;
 	return this;

@@ -25,7 +25,7 @@
 #include <QColor>
 
 #include "shaderdata.h"
-#include "texturedata.h"
+#include "texture.h"
 
 class SceneViewer;
 

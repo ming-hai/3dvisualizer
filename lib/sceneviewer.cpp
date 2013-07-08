@@ -68,7 +68,7 @@ quint32 SceneViewer::addNode(QString path, quint32 id)
             delete node;
             return SceneNode::invalidId();
         }
-        node->attachMaterial(m_normalsMaterial);
+        node->attachShader(m_normalsShader);
 
         m_nodes[id] = node;
         node->setID(id);
@@ -130,6 +130,17 @@ BufferSet *SceneViewer::getBufferSet()
     return mainBufferSet;
 }
 
+void SceneViewer::loadShaders()
+{
+    m_normalsShader = ShaderData::FromPlainText(
+                QString("shaders%1normal.vs").arg(QDir::separator()),
+                QString("shaders%1normal.fs").arg(QDir::separator()));
+
+    m_planeShader = ShaderData::FromPlainText(
+                    QString("shaders%1plane.vs").arg(QDir::separator()),
+                    QString("shaders%1plane.fs").arg(QDir::separator()));
+}
+
 // ********************************* OPENGL reimplemented methods *********************************
 
 void SceneViewer::initializeGL()
@@ -162,15 +173,18 @@ void SceneViewer::initializeGL()
     mainBufferSet->Initialize();
 
     // load shaders
-    m_normalsMaterial = new MaterialData("normal", this);
-    m_normalsMaterial->bind(DrawingPassSolid);
+    loadShaders();
 
-    m_planeMaterial = new MaterialData("plane", this);
+    //m_normalsMaterial = new MaterialData("normal", this);
+    //m_normalsMaterial->bind(DrawingPassSolid);
+
+    //m_planeMaterial = new MaterialData("plane", this);
     //m_compositeMaterial = new MaterialData("composite");
     //m_shadowMaterial = MaterialData("shadow");
 
     // Setup filter
     m_filter2D = new Filter2D(this);
+    m_filter2D->attachShader(m_planeShader);
 
     // Setup View
     m_view.bind();
@@ -216,7 +230,7 @@ void SceneViewer::paintGL()
 
     foreach(SceneNode *sn, nodes())
         sn->render();
-    m_filter2D->Draw(m_normalsMaterial);
+    //m_filter2D->Draw();
 
 }
 

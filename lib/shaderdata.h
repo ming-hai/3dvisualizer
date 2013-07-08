@@ -120,17 +120,17 @@ public:
 	GLuint shaderprogram;
     ShaderData(const char* vertexShader,const char* fragmentShader);
 	~ShaderData(void);
-	void Bind(void);
+    void bind(void);
     QString VertexName;
     QString FragmentName;
     static QString fileToBuffer(QString filename);
     static ShaderData* FromPlainText(QString vertexSource, QString fragmentSource);
-	static void Uniform1i(enum Uniforms, GLint i);
-	static void Uniform1f(enum Uniforms, GLfloat f);
+    static void Uniform1i(enum Uniforms, GLint i);
+    static void Uniform1f(enum Uniforms, GLfloat f);
     static void Uniform3fv(enum Uniforms, Vector3f const & vec);
     static void Uniform2fv(enum Uniforms, Vector2f const & vec);
     static void UniformMatrix4fv(enum Uniforms target, Matrix4f const & matrix);
-	static void UniformMatrix4fv(enum Uniforms target, GLfloat* matrix );
+    static void UniformMatrix4fv(enum Uniforms target, GLfloat* matrix );
     static void ParseUniformInserts(QList<UniformInsert *> list);
     static bool HasUniform(enum Uniforms);
 private:

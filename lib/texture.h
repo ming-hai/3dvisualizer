@@ -22,6 +22,7 @@
 #ifndef TEXTUREDATA_H
 #define TEXTUREDATA_H
 
+#include <QObject>
 #include <QString>
 #include <QColor>
 
@@ -31,21 +32,23 @@
 
 class SceneViewer;
 
-class TextureData
+class Texture : public QObject
 {
+    Q_OBJECT
 public:
-    TextureData(SceneViewer* sv);
-    ~TextureData();
+    Texture(SceneViewer* sv, ShaderData *shader, QObject *parent = 0);
+    ~Texture();
 
     void initData();
     bool loadMaterial(QColor color);
     bool loadTexture(QString path);
 
-	TextureData* SetTarget(enum Uniforms);
+    Texture* SetTarget(enum Uniforms);
     virtual void bind(void);
 
 private:
     SceneViewer *m_sv;
+    ShaderData *m_shader;
 
     enum Uniforms Target;
     QString Name;

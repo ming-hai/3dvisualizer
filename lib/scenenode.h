@@ -35,8 +35,7 @@
 
 #include "math_3d.h"
 #include "shaderdata.h"
-#include "texturedata.h"
-#include "materialdata.h"
+#include "texture.h"
 
 #define INVALID_MATERIAL 0xFFFFFFFF
 
@@ -111,7 +110,7 @@ protected:
 public:
     bool loadModel(QString path);
     bool loadModelFromBuffer(QString buffer);
-    bool attachMaterial(MaterialData* material);
+    bool attachShader(ShaderData* shader);
 
     float getScale();
 
@@ -136,6 +135,8 @@ public:
     aiVector3D getSceneCenter();
 
     quint32 getSize();
+
+    ShaderData *getShader();
 
     void bind();
 
@@ -182,13 +183,14 @@ private:
     };
 
     std::vector<MeshEntry> m_Entries;
-    std::vector<TextureData*> m_Textures;
+    QList<Texture*> m_textures;
 
     aiVector3D m_sceneMin, m_sceneMax;
     Vector3f m_nodePosition, m_nodeRotation;
 
     QString m_modelBaseDirectory;
-    MaterialData* m_material;
+    //MaterialData* m_material;
+    ShaderData *m_shader;
 
 signals:
     void changed(quint32 id);

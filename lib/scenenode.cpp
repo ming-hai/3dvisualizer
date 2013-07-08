@@ -53,6 +53,7 @@ SceneNode::SceneNode(SceneViewer *sv, QObject *parent)
     m_translationMatrix.InitIdentity();
 
     m_modelBaseDirectory = "";
+    m_shader = NULL;
 }
 
 SceneNode::~SceneNode()
@@ -62,9 +63,8 @@ SceneNode::~SceneNode()
 
 void SceneNode::clear()
 {
-    for (unsigned int i = 0 ; i < m_Textures.size() ; i++) {
-        SAFE_DELETE(m_Textures[i]);
-    }
+    foreach(Texture *texture, m_textures)
+        m_textures.removeOne(texture);
 
     if (m_VBO[0] != 0)
         glDeleteBuffers(NUM_VBOS, m_VBO);
@@ -167,9 +167,9 @@ bool SceneNode::loadModelFromBuffer(QString buffer)
     return Ret;
 }
 
-bool SceneNode::attachMaterial(MaterialData* material)
+bool SceneNode::attachShader(ShaderData* shader)
 {
-    m_material = material;
+    m_shader = shader;
 
     return true;
 }
@@ -260,6 +260,11 @@ quint32 SceneNode::getSize()
     return m_Positions.size();
 }
 
+ShaderData *SceneNode::getShader()
+{
+    return m_shader;
+}
+
 void SceneNode::bind()
 {
     if(m_useVertexArrays)
@@ -295,7 +300,7 @@ void SceneNode::bind()
 bool SceneNode::initFromScene(const aiScene* pScene)
 {
     m_Entries.resize(pScene->mNumMeshes);
-    m_Textures.resize(pScene->mNumMaterials);
+    //m_textures.resize(pScene->mNumMaterials);
 
     qDebug() << "Number of entries found: " << pScene->mNumMeshes;
 
@@ -455,7 +460,7 @@ bool SceneNode::initMaterials(const aiScene* pScene)
         const aiMaterial* pMaterial = pScene->mMaterials[i];
         bool ret = false;
 
-        m_Textures[i] = new TextureData(m_sv);
+        Texture* texture = new Texture(m_sv, m_shader);
         aiColor4D clr;
 
         aiString aName;
@@ -464,11 +469,13 @@ bool SceneNode::initMaterials(const aiScene* pScene)
 
         if(pMaterial->Get(AI_MATKEY_COLOR_AMBIENT, clr) == aiReturn_SUCCESS)
         {
-            ret = m_Textures[i]->loadMaterial(QColor::fromRgbF(clr.r, clr.g, clr.b, clr.a));
+            ret = texture->loadMaterial(QColor::fromRgbF(clr.r, clr.g, clr.b, clr.a));
+            texture->SetTarget(TexDiffuse);
         }
         else if(pMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, clr) == aiReturn_SUCCESS)
         {
-            ret = m_Textures[i]->loadMaterial(QColor::fromRgbF(clr.r, clr.g, clr.b, clr.a));
+            ret = texture->loadMaterial(QColor::fromRgbF(clr.r, clr.g, clr.b, clr.a));
+            texture->SetTarget(TexDiffuse);
         }
         else if (pMaterial->GetTextureCount(aiTextureType_DIFFUSE) > 0)
         {
@@ -477,14 +484,16 @@ bool SceneNode::initMaterials(const aiScene* pScene)
             if (pMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &Path, NULL, NULL, NULL, NULL, NULL) == AI_SUCCESS)
             {
                 QString textPath = m_modelBaseDirectory + QDir::separator() + Path.data;
-                ret = m_Textures[i]->loadTexture(textPath);
+                ret = texture->loadTexture(textPath);
             }
         }
         if (ret == false)
         {
-            delete m_Textures[i];
-            m_Textures[i] = NULL;
+            delete texture;
+            texture = NULL;
         }
+        else
+            m_textures.append(texture);
     }
 
     return true;
@@ -583,17 +592,35 @@ void SceneNode::render(enum DrawingPass pass)
 {
 //    if(pass == DrawingPassSolidForced) // || curViewPort->FrustumCheck(Position, Mesh->maxRadius))
 //    {
-        if(!m_material->bind(pass))
-            return;
+        if (m_shader)
+            m_shader->bind();
 
         bind();
 
-        ShaderData::UniformMatrix4fv(MatModelView, m_translationMatrix);
-        ShaderData::UniformMatrix4fv(MatModelRotation, m_rotationMatrix);
-        ViewPort::insertViewProjectionMatrix();
-        ShaderData::ParseUniformInserts(m_uniformInserts);
+        if (m_shader)
+        {
+            m_shader->UniformMatrix4fv(MatModelView, m_translationMatrix);
+            m_shader->UniformMatrix4fv(MatModelRotation, m_rotationMatrix);
+            ViewPort::insertViewProjectionMatrix();
+            m_shader->ParseUniformInserts(m_uniformInserts);
+        }
 
-        glDrawElements(GL_TRIANGLES, m_Positions.size(), GL_UNSIGNED_INT, 0);
+        for (unsigned int i = 0 ; i < m_Entries.size(); i++)
+        {
+            const unsigned int MaterialIndex = m_Entries[i].MaterialIndex;
+
+            //Q_ASSERT(MaterialIndex < m_textures.size());
+
+            if (m_textures[MaterialIndex]) {
+                m_textures[MaterialIndex]->bind();
+            }
+
+            glDrawElementsBaseVertex(GL_TRIANGLES,
+                                     m_Entries[i].NumIndices,
+                                     GL_UNSIGNED_INT,
+                                     (void*)(sizeof(unsigned int) * m_Entries[i].BaseIndex),
+                                     m_Entries[i].BaseVertex);
+        }
 //    }
 }
 
