@@ -38,6 +38,7 @@ public:
     bool bind(enum DrawingPass pass);
 
 private:
+    SceneViewer* m_scv;
     ShaderData* m_shader;
     FbTextureBinder* m_textureBinder;
     QList<TextureData*> m_textures;

@@ -166,12 +166,9 @@ ShaderData::ShaderData(const char* vertexsource,const char* fragmentsource)
 
     glLinkProgram(shaderprogram);
 
-	generateLocations();
+    generateLocations();
 
 	glUseProgram(0);
-
-    //free(vertexsource);
-    //free(fragmentsource);
 
     Shaders.append(this);
 }
@@ -261,7 +258,7 @@ GLint ShaderData::getLocation(enum Uniforms target)
 
 bool ShaderData::HasUniform(enum Uniforms target)
 {
-	return curShader->UniformLocations[target] != -1;
+    return curShader->UniformLocations[target] != -1;
 }
 
 void ShaderData::ParseUniformInserts(QList<UniformInsert*> list)

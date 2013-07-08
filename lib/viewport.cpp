@@ -84,9 +84,11 @@ void ViewPort::setProjectionMatrix()
 
     viewProjectionMatrix = projection * rotation * translation;
 
+    /*
     qDebug() << Q_FUNC_INFO << "GENERATED MATRIX";
     qDebug() << viewProjectionMatrix.m_matrix[0][0] << viewProjectionMatrix.m_matrix[0][1] << viewProjectionMatrix.m_matrix[0][2] << viewProjectionMatrix.m_matrix[0][3];
     qDebug() << viewProjectionMatrix.m_matrix[1][0] << viewProjectionMatrix.m_matrix[1][1] << viewProjectionMatrix.m_matrix[1][2] << viewProjectionMatrix.m_matrix[1][3];
     qDebug() << viewProjectionMatrix.m_matrix[2][0] << viewProjectionMatrix.m_matrix[2][1] << viewProjectionMatrix.m_matrix[2][2] << viewProjectionMatrix.m_matrix[2][3];
     qDebug() << viewProjectionMatrix.m_matrix[3][0] << viewProjectionMatrix.m_matrix[3][1] << viewProjectionMatrix.m_matrix[3][2] << viewProjectionMatrix.m_matrix[3][3];
+    */
 }

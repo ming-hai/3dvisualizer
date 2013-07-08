@@ -121,8 +121,9 @@ enum FrameBuffer
 	FbDefReflections
 };
 
-struct FbTextureBinder
+class FbTextureBinder
 {
+public:
     FbTextureBinder(enum Uniforms target, QString texture, SceneViewer *sv);
 
     void bind();

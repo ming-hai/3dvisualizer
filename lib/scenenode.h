@@ -58,6 +58,17 @@ struct Vertex
     }
 };
 
+enum ModelVBOs
+{
+    POSITIONS_VB,
+    NORMALS_VB,
+    TEXTURES_VB,
+    TANGENTS_VB,
+    BINORMALS_VB,
+    INDICES_VB,
+    NUM_VBOS
+};
+
 class SceneNode : public QObject
 {
     Q_OBJECT
@@ -141,7 +152,7 @@ private:
     bool m_useVertexArrays;
 
     GLuint m_VAO;
-    GLuint m_VBO[6];
+    GLuint m_VBO[NUM_VBOS];
 
     Matrix4f m_translationMatrix;
     Matrix4f m_rotationMatrix;
@@ -151,7 +162,7 @@ private:
     std::vector<Vector2f> m_TexCoords;
     std::vector<Vector3f> m_Tangents;
     std::vector<Vector3f> m_BiNormals;
-    std::vector<unsigned long> m_Indices;
+    std::vector<unsigned int> m_Indices;
 
     QList<UniformInsert*> m_uniformInserts;
 
@@ -164,10 +175,10 @@ private:
             MaterialIndex = INVALID_MATERIAL;
         }
 
-        unsigned long NumIndices;
-        unsigned long BaseVertex;
-        unsigned long BaseIndex;
-        unsigned long MaterialIndex;
+        unsigned int NumIndices;
+        unsigned int BaseVertex;
+        unsigned int BaseIndex;
+        unsigned int MaterialIndex;
     };
 
     std::vector<MeshEntry> m_Entries;

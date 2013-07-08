@@ -362,6 +362,8 @@ void FbTextureBinder::bind()
 			break;
 		}
 
+        qDebug() << "Bind texture ID: " << textureId;
+
         if(textureId != GLUINT_MAX && ShaderData::HasUniform(m_target))
 		{
             glActiveTexture(GL_TEXTURE0 + m_sv->getTextureUnitCount());

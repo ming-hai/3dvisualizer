@@ -29,15 +29,7 @@
 #define aisgl_min(x,y) (x<y?x:y)
 #define aisgl_max(x,y) (y>x?y:x)
 
-#define POSITIONS_VB  0
-#define NORMALS_VB    1
-#define TEXTURES_VB   2
-#define TANGENTS_VB   3
-#define BINORMALS_VB  4
-#define INDICES_VB    5
-
 #define ZERO_MEM(a) memset(a, 0, sizeof(a))
-#define ARRAY_SIZE_IN_ELEMENTS(a) (sizeof(a)/sizeof(a[0]))
 #define GLCheckError() (glGetError() == GL_NO_ERROR)
 #define SAFE_DELETE(p) if (p) { delete p; p = NULL; }
 
@@ -75,7 +67,7 @@ void SceneNode::clear()
     }
 
     if (m_VBO[0] != 0)
-        glDeleteBuffers(ARRAY_SIZE_IN_ELEMENTS(m_VBO), m_VBO);
+        glDeleteBuffers(NUM_VBOS, m_VBO);
 
     if (m_VAO != 0)
     {
@@ -118,7 +110,7 @@ bool SceneNode::loadModel(QString path)
     glBindVertexArray(m_VAO);
 
     // Create the buffers for the vertices attributes
-    glGenBuffers(ARRAY_SIZE_IN_ELEMENTS(m_VBO), m_VBO);
+    glGenBuffers(NUM_VBOS, m_VBO);
 
     bool Ret = false;
 
@@ -152,7 +144,7 @@ bool SceneNode::loadModelFromBuffer(QString buffer)
     glBindVertexArray(m_VAO);
 
     // Create the buffers for the vertices attributes
-    glGenBuffers(ARRAY_SIZE_IN_ELEMENTS(m_VBO), m_VBO);
+    glGenBuffers(NUM_VBOS, m_VBO);
 
     bool Ret = false;
 
@@ -307,8 +299,8 @@ bool SceneNode::initFromScene(const aiScene* pScene)
 
     qDebug() << "Number of entries found: " << pScene->mNumMeshes;
 
-    unsigned long NumVertices = 0;
-    unsigned long NumIndices = 0;
+    unsigned int NumVertices = 0;
+    unsigned int NumIndices = 0;
 
     // Initialize the meshes in the scene one by one
     for (unsigned int i = 0 ; i < m_Entries.size() ; i++)
@@ -340,7 +332,7 @@ bool SceneNode::initFromScene(const aiScene* pScene)
     // Position data
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO[POSITIONS_VB]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(m_Positions[0]) * m_Positions.size(), &m_Positions[0], GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(AttrPosition, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(AttrPosition);
 
     if (GLCheckError() == false)
@@ -352,7 +344,7 @@ bool SceneNode::initFromScene(const aiScene* pScene)
     // Normal data
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO[NORMALS_VB]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(m_Normals[0]) * m_Normals.size(), &m_Normals[0], GL_STATIC_DRAW);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(AttrNormal, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(AttrNormal);
 
     if (GLCheckError() == false)
@@ -364,7 +356,7 @@ bool SceneNode::initFromScene(const aiScene* pScene)
     // Texture data
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO[TEXTURES_VB]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(m_TexCoords[0]) * m_TexCoords.size(), &m_TexCoords[0], GL_STATIC_DRAW);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(AttrTexCoord, 2, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(AttrTexCoord);
 
     if (GLCheckError() == false)
@@ -376,7 +368,7 @@ bool SceneNode::initFromScene(const aiScene* pScene)
     // Tangent data
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO[TANGENTS_VB]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(m_Tangents[0]) * m_Tangents.size(), &m_Tangents[0], GL_STATIC_DRAW);
-    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(AttrTangent, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(AttrTangent);
 
     if (GLCheckError() == false)
@@ -388,7 +380,7 @@ bool SceneNode::initFromScene(const aiScene* pScene)
     // BiNormal data
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO[BINORMALS_VB]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(m_BiNormals[0]) * m_BiNormals.size(), &m_BiNormals[0], GL_STATIC_DRAW);
-    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(AttrBiNormal, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(AttrBiNormal);
 
     if (GLCheckError() == false)
