@@ -25,9 +25,13 @@
 #include <QColor>
 
 #include "shaderdata.h"
-#include "texture.h"
+#include "framebuffertexture.h"
 
 class SceneViewer;
+
+/*****************************************************************************
+ * FrameBufferData class
+ *****************************************************************************/
 
 class FrameBufferData
 {
@@ -55,7 +59,10 @@ public:
     void SetMultiSampling(bool value);
 };
 
-//GL window framebuffer
+/*****************************************************************************
+ * DefaultFrameBuffer class
+ *****************************************************************************/
+
 class DefaultFrameBuffer : FrameBufferData
 {
 public:
@@ -68,6 +75,10 @@ private:
     int m_width;
     int m_height;
 };
+
+/*****************************************************************************
+ * BufferSet class
+ *****************************************************************************/
 
 class BufferSet
 {
@@ -121,10 +132,14 @@ enum FrameBuffer
 	FbDefReflections
 };
 
-class FbTextureBinder
+/*****************************************************************************
+ * FrameBufferTextureBinder class
+ *****************************************************************************/
+
+class FrameBufferTextureBinder : public FramebufferTexture
 {
 public:
-    FbTextureBinder(enum Uniforms target, QString texture, SceneViewer *sv);
+    FrameBufferTextureBinder(enum Uniforms target, QString textureName, SceneViewer *sv);
 
     void bind();
 

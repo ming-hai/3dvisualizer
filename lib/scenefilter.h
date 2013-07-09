@@ -1,6 +1,6 @@
 /*
   Q Light Controller Plus
-  filter2d.h
+  scenefilter.h
 
   Copyright (C) Phillip Schulz-Theißen, Massimo Callegari
 
@@ -19,19 +19,35 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#ifndef FILTER2D_H
-#define FILTER2D_H
+#ifndef SCENEFILTER_H
+#define SCENEFILTER_H
 
-#include "scenenode.h"
-#include "scenefilter.h"
+#include "shaderdata.h"
+#include "framebufferdata.h"
+#include "framebuffertexture.h"
 
-class Filter2D: public SceneNode
+class SceneViewer;
+
+class SceneFilter
 {
 public:
-    Filter2D(SceneViewer *sv);
-	~Filter2D(void);
-    void Draw(SceneFilter *filter);
-    void Draw(SceneFilter *filter, QList<UniformInsert *> UniformInserts);
+    SceneFilter(SceneViewer *scv);
+    ~SceneFilter(void);
+    bool bind(enum DrawingPass pass);
+
+    void setShader(ShaderData *shader);
+    void addFBTexture(enum Uniforms target, QString textureName);
+    //static MaterialData* FromXml(char* source);
+
+private:
+    SceneViewer *m_scv;
+    QString Name;
+    bool isTransparent;
+
+    QList<FramebufferTexture *> m_textures;
+    ShaderData* m_shader;
+    ShaderData* m_deferredShader;
+    ShaderData* m_shadowShader;
 };
 
 #endif

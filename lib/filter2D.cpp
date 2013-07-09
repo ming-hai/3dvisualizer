@@ -49,24 +49,26 @@ Filter2D::~Filter2D(void)
 {
 }
 
-void Filter2D::Draw()
+void Filter2D::Draw(SceneFilter *filter)
 {
-    ShaderData *shader = getShader();
-    if (shader)
-        shader->bind();
-
     bind();
+
+    if(!filter->bind(DrawingPassSolid))
+        return;
 
     glDrawElements(GL_TRIANGLES, getSize(), GL_UNSIGNED_INT, 0);
 }
 
-void Filter2D::Draw(QList<UniformInsert *> UniformInsterts)
+void Filter2D::Draw(SceneFilter *filter, QList<UniformInsert *> UniformInserts)
 {
     bind();
 
+    if(!filter->bind(DrawingPassSolid))
+        return;
+
     ShaderData *shader = getShader();
     if (shader)
-        shader->ParseUniformInserts(UniformInsterts);
+        shader->ParseUniformInserts(UniformInserts);
 
     glDrawElements(GL_TRIANGLES, getSize(), GL_UNSIGNED_INT, 0);
 }

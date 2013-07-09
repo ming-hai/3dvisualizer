@@ -611,9 +611,8 @@ void SceneNode::render(enum DrawingPass pass)
 
             //Q_ASSERT(MaterialIndex < m_textures.size());
 
-            if (m_textures[MaterialIndex]) {
+            if (MaterialIndex < m_textures.length())
                 m_textures[MaterialIndex]->bind();
-            }
 
             glDrawElementsBaseVertex(GL_TRIANGLES,
                                      m_Entries[i].NumIndices,

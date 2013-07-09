@@ -167,7 +167,7 @@ void SceneViewer::initializeGL()
     // Initialize Renderbuffers
     mainBufferSet = new BufferSet();
     mainBufferSet->EnableSsao = true;
-    mainBufferSet->EnableBloom = true;
+    mainBufferSet->EnableBloom = false;
     mainBufferSet->SizeX = width();
     mainBufferSet->SizeY = height();
     mainBufferSet->Initialize();
@@ -175,14 +175,12 @@ void SceneViewer::initializeGL()
     // load shaders
     loadShaders();
 
-    //m_normalsMaterial = new MaterialData("normal", this);
-    //m_normalsMaterial->bind(DrawingPassSolid);
+    // create scene filters
+    planeFilter = new SceneFilter(this);
+    planeFilter->setShader(m_planeShader);
+    planeFilter->addFBTexture(TexDiffuse, "Scene");
 
-    //m_planeMaterial = new MaterialData("plane", this);
-    //m_compositeMaterial = new MaterialData("composite");
-    //m_shadowMaterial = MaterialData("shadow");
-
-    // Setup filter
+    // Setup 2D filter
     m_filter2D = new Filter2D(this);
     m_filter2D->attachShader(m_planeShader);
 
@@ -225,12 +223,11 @@ void SceneViewer::paintGL()
     //Output final image
     mainBufferSet->OutBuffer->Bind(false);
 
-    m_filter2D->Draw(m_planeMaterial);
+    m_filter2D->Draw(planeFilter);
 */
 
     foreach(SceneNode *sn, nodes())
         sn->render();
-    //m_filter2D->Draw();
-
+    m_filter2D->Draw(planeFilter);
 }
 

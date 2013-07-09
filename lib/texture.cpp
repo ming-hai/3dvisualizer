@@ -25,8 +25,6 @@
 #include "texture.h"
 #include "sceneviewer.h"
 
-float Anisotropic = 16;
-
 Texture::Texture(SceneViewer* sv, ShaderData *shader, QObject *parent)
     : QObject(parent)
 {
@@ -52,8 +50,6 @@ void Texture::initData()
 	glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST );
 	// set the magnification filter
 	glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-	// enable anisotropic filtering
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, Anisotropic);
 }
 
 bool Texture::loadMaterial(QColor color)

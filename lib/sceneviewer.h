@@ -28,6 +28,7 @@
 #include <QGLWidget>
 
 #include "framebufferdata.h"
+#include "scenefilter.h"
 #include "scenenode.h"
 #include "filter2D.h"
 #include "viewport.h"
@@ -124,6 +125,12 @@ private:
     ShaderData* m_normalsShader;
     ShaderData* m_planeShader;
 
+    /*********************************************************************
+     * Scene filters
+     *********************************************************************/
+private:
+    SceneFilter *planeFilter;
+
     BufferSet* mainBufferSet;
     Filter2D* m_filter2D;
 
@@ -131,10 +138,6 @@ private:
 
     GLuint m_sceneList;
 
-    //MaterialData* m_normalsMaterial;
-    //MaterialData* m_planeMaterial;
-    //MaterialData* m_compositeMaterial;
-    //MaterialData* m_shadowMaterial;
     ViewPort m_view;
 
 signals:

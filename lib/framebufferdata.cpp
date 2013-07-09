@@ -86,7 +86,7 @@ void FrameBufferData::Initialize()
 {
     qDebug() << "FrameBufferData ENTER Initialize";
 
-    GLfloat sampeling = MultiSampling ? GL_LINEAR : GL_NEAREST;
+    GLfloat sampling = MultiSampling ? GL_LINEAR : GL_NEAREST;
 
 	if(UseColor)
 	{
@@ -94,32 +94,37 @@ void FrameBufferData::Initialize()
         if(TextureId == GLUINT_MAX)
 			glGenTextures(1, &TextureId);
 		glBindTexture(GL_TEXTURE_2D, TextureId);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, sampeling);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, sampeling);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, sampling);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, sampling);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexImage2D(GL_TEXTURE_2D, 0, BufferFmt, SizeX, SizeY, 0,
 					GL_RGBA, GL_UNSIGNED_BYTE, 0);
 		glBindTexture(GL_TEXTURE_2D, 0);
+        qDebug() << "-UseColor- textureID:" << TextureId;
 	}
 
 	// Create Depth Tex
     if(DepthTextureId == GLUINT_MAX)
 		glGenTextures(1, &DepthTextureId);
 	glBindTexture(GL_TEXTURE_2D, DepthTextureId);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, sampeling);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, sampeling);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, sampling);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, sampling);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexImage2D(GL_TEXTURE_2D, 0, DepthBufferFmt, SizeX, SizeY, 0,
 		GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, 0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
+    qDebug() << "DepthTextureId:" << DepthTextureId;
+
 	// create a framebuffer object
     if(FboId == GLUINT_MAX)
 		glGenFramebuffersEXT(1, &FboId);
 
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, FboId);
+
+    qDebug() << "FboId:" << FboId;
 
 	GLenum status = GL_FRAMEBUFFER_COMPLETE_EXT;
 	if(UseColor)
@@ -135,7 +140,7 @@ void FrameBufferData::Initialize()
 		glReadBuffer(GL_NONE);
 	}
 
-	// attach the depth exture to depth attachment point
+    // attach the depth texture to depth attachment point
 	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,GL_TEXTURE_2D, DepthTextureId, 0);
 	GLenum FBOstatus = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
 
@@ -272,7 +277,8 @@ static QString const BufferNames[] = {
 
 static int const BufferNameCount = sizeof(BufferNames)/sizeof(BufferNames[0]);
 
-FbTextureBinder::FbTextureBinder(enum Uniforms target, QString texture, SceneViewer *sv)
+FrameBufferTextureBinder::FrameBufferTextureBinder(enum Uniforms target, QString textureName, SceneViewer *sv)
+    : FramebufferTexture(sv)
 {
     m_sv = sv;
 
@@ -285,7 +291,7 @@ FbTextureBinder::FbTextureBinder(enum Uniforms target, QString texture, SceneVie
     m_texture = FrameBufferNull;
 	for (int i = 0; i < BufferNameCount; i++)
 	{
-        if(BufferNames[i] == texture)
+        if(BufferNames[i] == textureName)
 		{
             m_texture = (FrameBuffer)i;
 			break;
@@ -293,7 +299,7 @@ FbTextureBinder::FbTextureBinder(enum Uniforms target, QString texture, SceneVie
 	}
 }
 
-void FbTextureBinder::bind()
+void FrameBufferTextureBinder::bind()
 {
     if(ShaderData::HasUniform(m_target))
 	{

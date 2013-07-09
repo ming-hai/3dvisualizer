@@ -35,8 +35,10 @@ HEADERS += visualizer3d.h \
     objectseditor.h \
     shaderdata.h \
     texture.h \
+    scenefilter.h \
     filter2D.h \
     framebufferdata.h \
+    framebuffertexture.h \
     viewport.h \
     scenenode.h \
     math_3d.h
@@ -46,8 +48,10 @@ SOURCES += visualizer3d.cpp \
     objectseditor.cpp \
     shaderdata.cpp \
     texture.cpp \
+    scenefilter.cpp \
     filter2d.cpp \
     framebufferdata.cpp \
+    framebuffertexture.cpp \
     viewport.cpp \
     scenenode.cpp \
     math_3d.cpp
