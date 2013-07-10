@@ -52,9 +52,10 @@ void FrameBufferData::Bind(bool clear)
 {
 	if(FboReady)
 	{
+        //qDebug() << Q_FUNC_INFO << "width:" << SizeX << ",height:" << SizeY;
 		// set rendering destination to FBO
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, FboId);
-		glViewport(0, 0, SizeX, SizeY);
+        glViewport(0, 0, m_width, m_height);
 
 		// clear buffers
 		if(clear)
@@ -82,7 +83,7 @@ void FrameBufferData::SetMultiSampling(bool value)
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, param);
 }
 
-void FrameBufferData::Initialize()
+void FrameBufferData::initialize()
 {
     qDebug() << "FrameBufferData ENTER Initialize";
 
@@ -98,7 +99,7 @@ void FrameBufferData::Initialize()
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, sampling);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexImage2D(GL_TEXTURE_2D, 0, BufferFmt, SizeX, SizeY, 0,
+        glTexImage2D(GL_TEXTURE_2D, 0, BufferFmt, m_width, m_height, 0,
 					GL_RGBA, GL_UNSIGNED_BYTE, 0);
 		glBindTexture(GL_TEXTURE_2D, 0);
         qDebug() << "-UseColor- textureID:" << TextureId;
@@ -112,7 +113,7 @@ void FrameBufferData::Initialize()
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, sampling);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexImage2D(GL_TEXTURE_2D, 0, DepthBufferFmt, SizeX, SizeY, 0,
+    glTexImage2D(GL_TEXTURE_2D, 0, DepthBufferFmt, m_width, m_height, 0,
 		GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, 0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -195,58 +196,72 @@ BufferSet::BufferSet()
 {
 	EnableSsao = false;
 	EnableBloom = false;
-    SizeX = 0;
-    SizeY = 0;
+    m_width = 0;
+    m_height = 0;
+    OutBuffer = NULL;
 }
 
-void BufferSet::Initialize()
+void BufferSet::setSize(int w, int h)
 {
-    NormalPass.SizeX = SizeX;
-    NormalPass.SizeY = SizeY;
+    m_width = w;
+    m_height = h;
+
+    NormalPass.m_width = w;
+    NormalPass.m_height = h;
+
+    DeferredLightmap.m_width = w;
+    DeferredLightmap.m_height = h;
+
+    ScenePass.m_width = w;
+    ScenePass.m_height = h;
+
+    ReflectionPass.m_width = w;
+    ReflectionPass.m_height = h;
+
+    if(EnableSsao)
+    {
+        Bloom.m_width = w/4;
+        Bloom.m_height = h/4;
+
+        BloomB.m_width = w/4;
+        BloomB.m_height = h/4;
+
+        SsaoPrepare.m_width = w;
+        SsaoPrepare.m_height = h;
+
+        SsaoPerform.m_width = w/4;
+        SsaoPerform.m_height = h/4;
+
+        SsaoBlur.m_width = w/4;
+        SsaoBlur.m_height = h/4;
+    }
+}
+
+void BufferSet::initialize()
+{
+    setSize(m_width, m_height);
+
 	NormalPass.DepthBufferFmt = GL_DEPTH_COMPONENT24;
-	NormalPass.Initialize();
+    NormalPass.initialize();
 
-    DeferredLightmap.SizeX = SizeX;
-    DeferredLightmap.SizeY = SizeY;
-	DeferredLightmap.Initialize();
-
-    ScenePass.SizeX = SizeX;
-    ScenePass.SizeY = SizeY;
-	ScenePass.Initialize();
-
-    ReflectionPass.SizeX = SizeX;
-    ReflectionPass.SizeY = SizeY;
-	ReflectionPass.Initialize();
+    DeferredLightmap.initialize();
+    ScenePass.initialize();
+    ReflectionPass.initialize();
 
 	if(EnableSsao)
 	{
-        Bloom.SizeX = SizeX/4;
-        Bloom.SizeY = SizeY/4;
-		Bloom.Initialize();
+        Bloom.initialize();
+        BloomB.initialize();
 
-        BloomB.SizeX = SizeX/4;
-        BloomB.SizeY = SizeY/4;
-		BloomB.Initialize();
-	}
-
-	if(EnableSsao)
-	{
-        SsaoPrepare.SizeX = SizeX;
-        SsaoPrepare.SizeY = SizeY;
 		SsaoPrepare.BufferFmt = GL_RGBA16;
-		SsaoPrepare.Initialize();
-
-        SsaoPerform.SizeX = SizeX/4;
-        SsaoPerform.SizeY = SizeY/4;
-		SsaoPerform.Initialize();
-
-        SsaoBlur.SizeX = SizeX/4;
-        SsaoBlur.SizeY = SizeY/4;
+        SsaoPrepare.initialize();
+        SsaoPerform.initialize();
         SsaoBlur.MultiSampling = true;
-		SsaoBlur.Initialize();
+        SsaoBlur.initialize();
 	}
 
-    OutBuffer = new DefaultFrameBuffer(); //(FrameBufferData*)&defaultFramebuffer;
+    if (OutBuffer == NULL)
+        OutBuffer = new DefaultFrameBuffer();
 }
 
 BufferSet::~BufferSet()
@@ -368,7 +383,7 @@ void FrameBufferTextureBinder::bind()
 			break;
 		}
 
-        qDebug() << "Bind texture ID: " << textureId;
+        qDebug() << "[FrameBufferTextureBinder] Bind texture ID: " << textureId;
 
         if(textureId != GLUINT_MAX && ShaderData::HasUniform(m_target))
 		{
@@ -378,4 +393,6 @@ void FrameBufferTextureBinder::bind()
             m_sv->increaseTextureUnitCount();
 		}
 	}
+    else
+        qDebug() << "No uniform found (" << m_target << ")";
 }

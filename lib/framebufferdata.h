@@ -37,8 +37,8 @@ class FrameBufferData
 {
 public:
 	//settings
-	int SizeX;
-	int SizeY;
+    int m_width;
+    int m_height;
     QColor Clearcolor;
 	GLint DepthBufferFmt;
 	GLint BufferFmt;
@@ -54,7 +54,7 @@ public:
 	//creation
 	FrameBufferData(void);
 	~FrameBufferData(void);
-	void Initialize();
+    void initialize();
 	virtual void Bind(bool clear);
     void SetMultiSampling(bool value);
 };
@@ -63,7 +63,7 @@ public:
  * DefaultFrameBuffer class
  *****************************************************************************/
 
-class DefaultFrameBuffer : FrameBufferData
+class DefaultFrameBuffer : public FrameBufferData
 {
 public:
     DefaultFrameBuffer();
@@ -86,8 +86,8 @@ public:
 	// ShadingOptions
 	bool EnableSsao;
 	bool EnableBloom;
-    int SizeX;
-    int SizeY;
+    int m_width;
+    int m_height;
 
 	// Used access result
     DefaultFrameBuffer* OutBuffer;
@@ -106,7 +106,8 @@ public:
 	//Functions
 	BufferSet();
 	~BufferSet();
-    void Initialize();
+    void setSize(int w, int h);
+    void initialize();
 };
 
 enum FrameBuffer

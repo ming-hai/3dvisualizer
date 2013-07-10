@@ -11,6 +11,6 @@ in vec3 vBiNormal;
  
 void main(void) {
 	gl_FragColor = texture2D(Diffuse, vTexCoord);
-        gl_FragColor.rg = vTexCoord;
+        //gl_FragColor.rg = vTexCoord;
 	gl_FragColor.a = 1;
 }

@@ -168,9 +168,9 @@ void SceneViewer::initializeGL()
     mainBufferSet = new BufferSet();
     mainBufferSet->EnableSsao = true;
     mainBufferSet->EnableBloom = false;
-    mainBufferSet->SizeX = width();
-    mainBufferSet->SizeY = height();
-    mainBufferSet->Initialize();
+    mainBufferSet->m_width = width();
+    mainBufferSet->m_height = height();
+    mainBufferSet->initialize();
 
     // load shaders
     loadShaders();
@@ -192,9 +192,10 @@ void SceneViewer::resizeGL(int width, int height)
 {
     //qDebug() << Q_FUNC_INFO;
     glViewport(0, 0, width, height);
-    mainBufferSet->SizeX = width;
-    mainBufferSet->SizeY = height;
+    mainBufferSet->m_width = width;
+    mainBufferSet->m_height = height;
     mainBufferSet->OutBuffer->setSize(width, height);
+    mainBufferSet->initialize();
 }
 
 void SceneViewer::paintGL()
@@ -209,25 +210,11 @@ void SceneViewer::paintGL()
     glDepthFunc(GL_LEQUAL);
 
     m_textureUnitCount = 0;
-/*
-    //Draw normals pass
-    mainBufferSet->NormalPass.Bind(true);
-    foreach(SceneNode *sn, nodes())
-        sn->render();
 
-    //Draw solid pass
     mainBufferSet->ScenePass.Bind(true);
     foreach(SceneNode *sn, nodes())
-        sn->render(DrawingPassSolid);
-
-    //Output final image
-    mainBufferSet->OutBuffer->Bind(false);
-
-    m_filter2D->Draw(planeFilter);
-*/
-
-    foreach(SceneNode *sn, nodes())
         sn->render();
+    mainBufferSet->OutBuffer->Bind(false);
     m_filter2D->Draw(planeFilter);
 }
 

@@ -19,6 +19,8 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
+#include <QDebug>
+
 #include "scenefilter.h"
 #include "sceneviewer.h"
 
@@ -28,6 +30,7 @@ SceneFilter::SceneFilter(SceneViewer *scv)
     m_shader = NULL;
     m_deferredShader = NULL;
     m_shadowShader = NULL;
+    isTransparent = false;
 }
 
 SceneFilter::~SceneFilter(void)
@@ -49,6 +52,8 @@ bool SceneFilter::bind(enum DrawingPass pass)
 {
     if((pass == DrawingPassTransparent) != isTransparent)
 		return false;
+
+    qDebug() << Q_FUNC_INFO;
 
 	//get correct Shader
     ShaderData* curShader = NULL;

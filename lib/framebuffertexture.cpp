@@ -56,6 +56,7 @@ void FramebufferTexture::initData()
 
 void FramebufferTexture::bind(void)
 {
+    qDebug() << Q_FUNC_INFO << "textureID:" << textureId;
 	if(ShaderData::HasUniform(Target))
 	{
         glActiveTexture(GL_TEXTURE0 + m_sv->getTextureUnitCount());
