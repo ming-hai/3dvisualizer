@@ -167,13 +167,6 @@ bool SceneNode::loadModelFromBuffer(QString buffer)
     return Ret;
 }
 
-bool SceneNode::attachShader(ShaderData* shader)
-{
-    m_shader = shader;
-
-    return true;
-}
-
 float SceneNode::getScale()
 {
     float scale = m_sceneMax.x - m_sceneMin.x;
@@ -258,6 +251,13 @@ aiVector3D SceneNode::getSceneCenter()
 quint32 SceneNode::getSize()
 {
     return m_Positions.size();
+}
+
+bool SceneNode::setShader(ShaderData* shader)
+{
+    m_shader = shader;
+
+    return true;
 }
 
 ShaderData *SceneNode::getShader()

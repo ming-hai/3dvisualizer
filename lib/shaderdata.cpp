@@ -19,6 +19,7 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
+#include <QDir>
 #include <QList>
 #include <QFile>
 #include <QDebug>
@@ -75,7 +76,7 @@ void ShaderData::generateLocations()
         UniformLocations[i] = glGetUniformLocation(shaderprogram, UniformsStrings[i].toAscii().data());
 }
 
-ShaderData::ShaderData(const char* vertexsource,const char* fragmentsource)
+ShaderData::ShaderData(const char* vertexsource, const char* fragmentsource)
 {
 	char *vertexInfoLog;
     char *fragmentInfoLog;
@@ -183,15 +184,14 @@ QString ShaderData::fileToBuffer(QString filename)
     return "";
 }
 
-ShaderData* ShaderData::FromPlainText(QString vertexSource, QString fragmentSource)
+ShaderData* ShaderData::FromPlainText(QString shaderBaseName)
 {
     /* Read our shaders into the appropriate buffers */
-    QString vertexsource = fileToBuffer(vertexSource);
-    QString fragmentsource = fileToBuffer(fragmentSource);
+    QString vertexsource = fileToBuffer(QString("shaders%1%2.vs").arg(QDir::separator()).arg(shaderBaseName));
+    QString fragmentsource = fileToBuffer(QString("shaders%1%2.fs").arg(QDir::separator()).arg(shaderBaseName));
 
     ShaderData* Shader = new ShaderData(vertexsource.toStdString().c_str(), fragmentsource.toStdString().c_str());
-    Shader->VertexName = vertexSource;
-    Shader->FragmentName = fragmentSource;
+    Shader->m_name = shaderBaseName;
 
 	return Shader;
 }

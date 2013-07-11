@@ -26,6 +26,30 @@
 //#include "Sun.h"
 //#include "CubeMap.h"
 
+static QString const BufferNames[] = {
+    "NULL",
+    "NormalColor",
+    "NormalDepth",
+    "DefferedLightmap",
+    "MyShadowmap",
+    "MyInnerShadowMap",
+    "Scene",
+    "Bloom",
+    "BloomB",
+    "SsaoPrepare",
+    "SsaoPerform",
+    "SsaoBlur",
+    "CubemapSide1",
+    "CubemapSide2",
+    "CubemapSide3",
+    "CubemapSide4",
+    "CubemapSide5",
+    "CubemapSide6",
+    "DefferedReflections"
+};
+
+static int const BufferNameCount = sizeof(BufferNames)/sizeof(BufferNames[0]);
+
 /*********************************************************************
  * FrameBufferData class
  *********************************************************************/
@@ -268,29 +292,9 @@ BufferSet::~BufferSet()
 {
 }
 
-static QString const BufferNames[] = {
-	"NULL",
-	"NormalColor",
-	"NormalDepth",
-	"DefferedLightmap",
-	"MyShadowmap",
-	"MyInnerShadowMap",
-	"Scene",
-	"Bloom",
-	"BloomB",
-	"SsaoPrepare",
-	"SsaoPerform",
-	"SsaoBlur",
-	"CubemapSide1",
-	"CubemapSide2",
-	"CubemapSide3",
-	"CubemapSide4",
-	"CubemapSide5",
-	"CubemapSide6",
-	"DefferedReflections"
-};
-
-static int const BufferNameCount = sizeof(BufferNames)/sizeof(BufferNames[0]);
+/*********************************************************************
+ * FrameBufferTextureBinder class
+ *********************************************************************/
 
 FrameBufferTextureBinder::FrameBufferTextureBinder(enum Uniforms target, QString textureName, SceneViewer *sv)
     : FramebufferTexture(sv)
@@ -318,7 +322,7 @@ void FrameBufferTextureBinder::bind()
 {
     if(ShaderData::HasUniform(m_target))
 	{
-		GLuint textureId = -1;
+        GLuint textureId = GLUINT_MAX;
         switch (m_texture)
 		{
 		case FrameBufferNormalColor:
@@ -385,7 +389,7 @@ void FrameBufferTextureBinder::bind()
 
         qDebug() << "[FrameBufferTextureBinder] Bind texture ID: " << textureId;
 
-        if(textureId != GLUINT_MAX && ShaderData::HasUniform(m_target))
+        if(textureId != GLUINT_MAX)
 		{
             glActiveTexture(GL_TEXTURE0 + m_sv->getTextureUnitCount());
 			glBindTexture(GL_TEXTURE_2D, textureId);
@@ -394,5 +398,5 @@ void FrameBufferTextureBinder::bind()
 		}
 	}
     else
-        qDebug() << "No uniform found (" << m_target << ")";
+        qDebug() << "[FrameBufferTextureBinder] No uniform found (" << m_target << ")";
 }

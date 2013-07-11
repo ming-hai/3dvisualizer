@@ -68,7 +68,7 @@ quint32 SceneViewer::addNode(QString path, quint32 id)
             delete node;
             return SceneNode::invalidId();
         }
-        node->attachShader(m_normalsShader);
+        node->setShader(m_sceneShader);
 
         m_nodes[id] = node;
         node->setID(id);
@@ -132,13 +132,9 @@ BufferSet *SceneViewer::getBufferSet()
 
 void SceneViewer::loadShaders()
 {
-    m_normalsShader = ShaderData::FromPlainText(
-                QString("shaders%1normal.vs").arg(QDir::separator()),
-                QString("shaders%1normal.fs").arg(QDir::separator()));
-
-    m_planeShader = ShaderData::FromPlainText(
-                    QString("shaders%1plane.vs").arg(QDir::separator()),
-                    QString("shaders%1plane.fs").arg(QDir::separator()));
+    m_normalsShader = ShaderData::FromPlainText("normal");
+    m_sceneShader = ShaderData::FromPlainText("scenepass");
+    m_planeShader = ShaderData::FromPlainText("plane");
 }
 
 // ********************************* OPENGL reimplemented methods *********************************
@@ -176,13 +172,16 @@ void SceneViewer::initializeGL()
     loadShaders();
 
     // create scene filters
-    planeFilter = new SceneFilter(this);
-    planeFilter->setShader(m_planeShader);
-    planeFilter->addFBTexture(TexDiffuse, "Scene");
+    m_normalsFilter = new SceneFilter(this);
+    m_normalsFilter->setShader(m_normalsShader);
+    m_normalsFilter->addFBTexture(TexNormal, "NormalColor");
 
-    // Setup 2D filter
+    m_planeFilter = new SceneFilter(this);
+    m_planeFilter->setShader(m_planeShader);
+    m_planeFilter->addFBTexture(TexDiffuse, "Scene");
+
+    // Create 2D filter
     m_filter2D = new Filter2D(this);
-    m_filter2D->attachShader(m_planeShader);
 
     // Setup View
     m_view.bind();
@@ -203,7 +202,6 @@ void SceneViewer::paintGL()
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     glDepthMask(GL_TRUE);
@@ -211,10 +209,24 @@ void SceneViewer::paintGL()
 
     m_textureUnitCount = 0;
 
+    //Draw normals pass
+    mainBufferSet->NormalPass.Bind(true);
+    glEnable(GL_DEPTH_TEST);
+    glDisable(GL_BLEND);
+    foreach(SceneNode *sn, nodes())
+    {
+        sn->setShader(m_normalsShader);
+        sn->render();
+    }
+    m_filter2D->Draw(m_normalsFilter);
+
     mainBufferSet->ScenePass.Bind(true);
     foreach(SceneNode *sn, nodes())
+    {
+        sn->setShader(m_sceneShader);
         sn->render();
+    }
     mainBufferSet->OutBuffer->Bind(false);
-    m_filter2D->Draw(planeFilter);
+    m_filter2D->Draw(m_planeFilter);
 }
 

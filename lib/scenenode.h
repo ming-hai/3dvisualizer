@@ -110,7 +110,7 @@ protected:
 public:
     bool loadModel(QString path);
     bool loadModelFromBuffer(QString buffer);
-    bool attachShader(ShaderData* shader);
+    bool setShader(ShaderData* shader);
 
     float getScale();
 

@@ -121,10 +121,10 @@ public:
     ShaderData(const char* vertexShader,const char* fragmentShader);
 	~ShaderData(void);
     void bind(void);
-    QString VertexName;
+    QString m_name;
     QString FragmentName;
     static QString fileToBuffer(QString filename);
-    static ShaderData* FromPlainText(QString vertexSource, QString fragmentSource);
+    static ShaderData* FromPlainText(QString shaderBaseName);
     static void Uniform1i(enum Uniforms, GLint i);
     static void Uniform1f(enum Uniforms, GLfloat f);
     static void Uniform3fv(enum Uniforms, Vector3f const & vec);

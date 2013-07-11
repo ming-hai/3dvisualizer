@@ -123,13 +123,15 @@ public:
 
 private:
     ShaderData* m_normalsShader;
+    ShaderData* m_sceneShader;
     ShaderData* m_planeShader;
 
     /*********************************************************************
      * Scene filters
      *********************************************************************/
 private:
-    SceneFilter *planeFilter;
+    SceneFilter *m_planeFilter;
+    SceneFilter *m_normalsFilter;
 
     BufferSet* mainBufferSet;
     Filter2D* m_filter2D;
