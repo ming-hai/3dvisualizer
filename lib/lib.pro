@@ -33,28 +33,25 @@ win32 {
 HEADERS += visualizer3d.h \
     sceneviewer.h \
     objectseditor.h \
-    shaderdata.h \
-    texture.h \
-    scenefilter.h \
-    filter2D.h \
-    framebufferdata.h \
-    framebuffertexture.h \
-    viewport.h \
+    shader.h \
     scenenode.h \
-    math_3d.h
+    texture.h \
+    math_3d.h \
+    viewport.h \
+    deferredrendering.h \
+    fborendertexture.h
 
 SOURCES += visualizer3d.cpp \
     sceneviewer.cpp \
     objectseditor.cpp \
-    shaderdata.cpp \
-    texture.cpp \
-    scenefilter.cpp \
-    filter2d.cpp \
-    framebufferdata.cpp \
-    framebuffertexture.cpp \
-    viewport.cpp \
+    shader.cpp \
     scenenode.cpp \
-    math_3d.cpp
+    texture.cpp \
+    math_3d.cpp \
+    viewport.cpp \
+    deferredrendering.cpp \
+    fborendertexture.cpp
+
 FORMS += objectseditor.ui
 
 #############################################################################

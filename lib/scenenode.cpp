@@ -21,7 +21,6 @@
 
 #include "sceneviewer.h"
 #include "scenenode.h"
-#include "viewport.h"
 
 #include <QDebug>
 #include <QDir>
@@ -29,16 +28,14 @@
 #define aisgl_min(x,y) (x<y?x:y)
 #define aisgl_max(x,y) (y>x?y:x)
 
-#define ZERO_MEM(a) memset(a, 0, sizeof(a))
-#define GLCheckError() (glGetError() == GL_NO_ERROR)
-#define SAFE_DELETE(p) if (p) { delete p; p = NULL; }
+#define POSITION_LOCATION           0
+#define NORMAL_LOCATION             1
+#define TEX_COORD_LOCATION          2
 
-SceneNode::SceneNode(SceneViewer *sv, QObject *parent)
+SceneNode::SceneNode(ViewPort *view, QObject *parent)
     : QObject(parent)
+    , m_view(view)
 {
-    m_sv = sv;
-
-    m_useVertexArrays = true;
     m_VAO = 0;
     ZERO_MEM(m_VBO);
     m_nodePosition.x = 0.0;
@@ -53,6 +50,7 @@ SceneNode::SceneNode(SceneViewer *sv, QObject *parent)
     m_translationMatrix.InitIdentity();
 
     m_modelBaseDirectory = "";
+
     m_shader = NULL;
 }
 
@@ -253,48 +251,29 @@ quint32 SceneNode::getSize()
     return m_Positions.size();
 }
 
-bool SceneNode::setShader(ShaderData* shader)
+void SceneNode::setShader(Shader *sh)
 {
-    m_shader = shader;
+    m_shader = sh;
 
-    return true;
+    if (m_shader != NULL)
+    {
+        glUseProgram(m_shader->m_shaderProg);
+        glBindAttribLocation(m_shader->m_shaderProg, POSITION_LOCATION, "in_Position");
+        glBindAttribLocation(m_shader->m_shaderProg, NORMAL_LOCATION, "in_Normal");
+        glBindAttribLocation(m_shader->m_shaderProg, TEX_COORD_LOCATION, "in_TexCoord");
+        glLinkProgram(m_shader->m_shaderProg);
+
+        m_modelRotMatrixLoc = glGetUniformLocation(m_shader->m_shaderProg, "ModelRotationMatrix");
+        m_modelTransMatrixLoc = glGetUniformLocation(m_shader->m_shaderProg, "ModelTranslationMatrix");
+        m_worldMatrixLoc = glGetUniformLocation(m_shader->m_shaderProg, "WorldMatrix");
+        m_textUniLoc = glGetUniformLocation(m_shader->m_shaderProg, "tDiffuse");
+        glUseProgram(0);
+    }
 }
 
-ShaderData *SceneNode::getShader()
+Shader *SceneNode::getShader()
 {
     return m_shader;
-}
-
-void SceneNode::bind()
-{
-    if(m_useVertexArrays)
-    {
-        glBindVertexArray(m_VAO);
-    }
-    else
-    {
-        glBindBuffer(GL_ARRAY_BUFFER, m_VBO[POSITIONS_VB]);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-        glEnableVertexAttribArray(AttrPosition);
-
-        glBindBuffer(GL_ARRAY_BUFFER, m_VBO[NORMALS_VB]);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
-        glEnableVertexAttribArray(AttrNormal);
-
-        glBindBuffer(GL_ARRAY_BUFFER, m_VBO[TEXTURES_VB]);
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, 0);
-        glEnableVertexAttribArray(AttrTexCoord);
-
-        glBindBuffer(GL_ARRAY_BUFFER, m_VBO[TANGENTS_VB]);
-        glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0, 0);
-        glEnableVertexAttribArray(AttrTangent);
-
-        glBindBuffer(GL_ARRAY_BUFFER, m_VBO[BINORMALS_VB]);
-        glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 0, 0);
-        glEnableVertexAttribArray(AttrBiNormal);
-
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_VBO[INDICES_VB]);
-    }
 }
 
 bool SceneNode::initFromScene(const aiScene* pScene)
@@ -324,8 +303,6 @@ bool SceneNode::initFromScene(const aiScene* pScene)
     m_Positions.reserve(NumVertices);
     m_Normals.reserve(NumVertices);
     m_TexCoords.reserve(NumVertices);
-    m_Tangents.reserve(NumVertices);
-    m_BiNormals.reserve(NumVertices);
     m_Indices.reserve(NumIndices);
 
     // Initialize the meshes in the scene one by one
@@ -337,8 +314,8 @@ bool SceneNode::initFromScene(const aiScene* pScene)
     // Position data
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO[POSITIONS_VB]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(m_Positions[0]) * m_Positions.size(), &m_Positions[0], GL_STATIC_DRAW);
-    glVertexAttribPointer(AttrPosition, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(AttrPosition);
+    glEnableVertexAttribArray(POSITION_LOCATION);
+    glVertexAttribPointer(POSITION_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
     if (GLCheckError() == false)
     {
@@ -349,8 +326,8 @@ bool SceneNode::initFromScene(const aiScene* pScene)
     // Normal data
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO[NORMALS_VB]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(m_Normals[0]) * m_Normals.size(), &m_Normals[0], GL_STATIC_DRAW);
-    glVertexAttribPointer(AttrNormal, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(AttrNormal);
+    glEnableVertexAttribArray(NORMAL_LOCATION);
+    glVertexAttribPointer(NORMAL_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
     if (GLCheckError() == false)
     {
@@ -361,36 +338,12 @@ bool SceneNode::initFromScene(const aiScene* pScene)
     // Texture data
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO[TEXTURES_VB]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(m_TexCoords[0]) * m_TexCoords.size(), &m_TexCoords[0], GL_STATIC_DRAW);
-    glVertexAttribPointer(AttrTexCoord, 2, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(AttrTexCoord);
+    glEnableVertexAttribArray(TEX_COORD_LOCATION);
+    glVertexAttribPointer(TEX_COORD_LOCATION, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
     if (GLCheckError() == false)
     {
         qDebug() << "Error in binding textures VBO !";
-        return false;
-    }
-
-    // Tangent data
-    glBindBuffer(GL_ARRAY_BUFFER, m_VBO[TANGENTS_VB]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(m_Tangents[0]) * m_Tangents.size(), &m_Tangents[0], GL_STATIC_DRAW);
-    glVertexAttribPointer(AttrTangent, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(AttrTangent);
-
-    if (GLCheckError() == false)
-    {
-        qDebug() << "Error in binding tangents VBO !";
-        return false;
-    }
-
-    // BiNormal data
-    glBindBuffer(GL_ARRAY_BUFFER, m_VBO[BINORMALS_VB]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(m_BiNormals[0]) * m_BiNormals.size(), &m_BiNormals[0], GL_STATIC_DRAW);
-    glVertexAttribPointer(AttrBiNormal, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(AttrBiNormal);
-
-    if (GLCheckError() == false)
-    {
-        qDebug() << "Error in binding binormals VBO !";
         return false;
     }
 
@@ -460,7 +413,7 @@ bool SceneNode::initMaterials(const aiScene* pScene)
         const aiMaterial* pMaterial = pScene->mMaterials[i];
         bool ret = false;
 
-        Texture* texture = new Texture(m_sv, m_shader);
+        Texture* texture = new Texture(GL_TEXTURE_2D);
         aiColor4D clr;
 
         aiString aName;
@@ -470,12 +423,10 @@ bool SceneNode::initMaterials(const aiScene* pScene)
         if(pMaterial->Get(AI_MATKEY_COLOR_AMBIENT, clr) == aiReturn_SUCCESS)
         {
             ret = texture->loadMaterial(QColor::fromRgbF(clr.r, clr.g, clr.b, clr.a));
-            texture->SetTarget(TexDiffuse);
         }
         else if(pMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, clr) == aiReturn_SUCCESS)
         {
             ret = texture->loadMaterial(QColor::fromRgbF(clr.r, clr.g, clr.b, clr.a));
-            texture->SetTarget(TexDiffuse);
         }
         else if (pMaterial->GetTextureCount(aiTextureType_DIFFUSE) > 0)
         {
@@ -499,128 +450,43 @@ bool SceneNode::initMaterials(const aiScene* pScene)
     return true;
 }
 
-void SceneNode::generateTangents()
+void SceneNode::render(bool applyMaterials)
 {
-    // Info about current triangle
-    Vector3f vPos[3];
-    Vector2f vTex[3];
-    int vIndices[3];
-    int curIndex;
+    // bind the shader
+    if (m_shader)
+        glUseProgram(m_shader->m_shaderProg);
 
-    // Vectors of 2 triangle sides in local and texture space
-    Vector3f localA, localB;
-    Vector2f texA, texB;
+    glBindVertexArray(m_VAO);
 
-    // Vector multiplicators
-    float rTan, sTan;
-    float rBi, sBi;
+    glUniformMatrix4fv ( m_modelRotMatrixLoc, 1, GL_TRUE, (const GLfloat*)m_rotationMatrix.m_matrix);
+    glUniformMatrix4fv ( m_modelTransMatrixLoc, 1, GL_TRUE, (const GLfloat*)m_translationMatrix.m_matrix);
 
-    // Result vectors
-    Vector3f Tangent, BiNormal;
+    Matrix4f worldMatrix = m_view->projectionMatrix();
+    glUniformMatrix4fv ( m_worldMatrixLoc, 1, GL_TRUE, (const GLfloat*)worldMatrix.m_matrix);
 
-    //Clean Up
-    for (uint i = 0; i < m_Positions.size(); i++)
+    for (unsigned int i = 0 ; i < m_Entries.size() ; i++)
     {
-        m_Tangents[i] = Vector3f(0.0f, 0.0f, 0.0f);
-        m_BiNormals[i] = Vector3f(0.0f, 0.0f, 0.0f);
-    }
-
-    //Generation
-    for (uint i = 0; i < m_Indices.size(); i+=3)
-    {
-        for (int j = 0; j < 3; j++)
-        {
-            curIndex = m_Indices[i + j];
-            vIndices[j] = curIndex;
-
-            vPos[j] = m_Positions[curIndex];
-            vTex[j] = m_TexCoords[curIndex];
-        }
-
-        // Calculate local space Vectors
-        localA = vPos[1] - vPos[0];
-        localB = vPos[2] - vPos[0];
-
-        // Calculate world space Vectors
-        texA = vTex[1] - vTex[0];
-        texB = vTex[2] - vTex[0];
-
-        // Calculate Multiplicators
-        // For tangent
-        sTan = 1.0f / (texB.x - texA.x * texB.y / texA.y);
-        rTan = 1.0f / (texA.x - texB.x * texA.y / texB.y);
-        // For binormal
-        sBi = 1.0f / (texB.y - texA.y * texB.x / texA.x);
-        rBi = 1.0f / (texA.y - texB.y * texA.x / texB.x);
-
-        // Calculate tangent and save to buffer
-        Vector3f tmpTang = Vector3f(localA.x * rTan, localA.y * rTan, localA.z * rTan) +
-                           Vector3f(localB.x * sTan, localB.y * sTan, localB.z * sTan);
-        Tangent = tmpTang.Normalize(); //normalize(rTan * localA + sTan * localB);
-        for (int j = 0; j < 3; j++)
-            m_Tangents[vIndices[j]] += Vector3f(Tangent.x, Tangent.y, Tangent.z);
-
-        // Calculate binormal and save to buffer
-        Vector3f tmpBiNorm = Vector3f(localA.x * rBi, localA.y * rBi, localA.z * rBi) +
-                             Vector3f(localB.x * sBi, localB.y * sBi, localB.z * sBi);
-        BiNormal = tmpBiNorm.Normalize(); //normalize(rBi * localA + sBi * localB);
-        for (int j = 0; j < 3; j++)
-            m_BiNormals[vIndices[j]] += Vector3f(BiNormal.x, BiNormal.y, BiNormal.z);
-    }
-    // Normalizing Result
-    Vector3f TmpVec;
-    for (uint i = 0; i < m_Positions.size(); i++)
-    {
-        //Normalize Tangent
-        TmpVec = Vector3f(m_Tangents[i]);
-        TmpVec.Normalize();
-        m_Tangents[i] = Vector3f(TmpVec.x, TmpVec.y, TmpVec.z);
-
-        //Normalize BiNormal
-        TmpVec = Vector3f(m_BiNormals[i]);
-        TmpVec.Normalize();
-        m_BiNormals[i] = Vector3f(TmpVec.x, TmpVec.y, TmpVec.z);
-    }
-}
-
-void SceneNode::render()
-{
-    render(DrawingPassSolid);
-}
-
-void SceneNode::render(enum DrawingPass pass)
-{
-//    if(pass == DrawingPassSolidForced) // || curViewPort->FrustumCheck(Position, Mesh->maxRadius))
-//    {
-        if (m_shader)
-            m_shader->bind();
-
-        bind();
-
-        if (m_shader)
-        {
-            m_shader->UniformMatrix4fv(MatModelView, m_translationMatrix);
-            m_shader->UniformMatrix4fv(MatModelRotation, m_rotationMatrix);
-            ViewPort::insertViewProjectionMatrix();
-            m_shader->ParseUniformInserts(m_uniformInserts);
-        }
-
-        for (unsigned int i = 0 ; i < m_Entries.size(); i++)
+        if (applyMaterials)
         {
             const unsigned int MaterialIndex = m_Entries[i].MaterialIndex;
+            Q_ASSERT(MaterialIndex < m_textures.size());
 
-            //Q_ASSERT(MaterialIndex < m_textures.size());
-
-            if (MaterialIndex < m_textures.length())
-                m_textures[MaterialIndex]->bind();
-
-            glDrawElementsBaseVertex(GL_TRIANGLES,
-                                     m_Entries[i].NumIndices,
-                                     GL_UNSIGNED_INT,
-                                     (void*)(sizeof(unsigned int) * m_Entries[i].BaseIndex),
-                                     m_Entries[i].BaseVertex);
+            if (m_textures[MaterialIndex])
+            {
+                m_textures[MaterialIndex]->bind(GL_TEXTURE0 + MaterialIndex);
+                glUniform1i ( m_textUniLoc, MaterialIndex);
+            }
         }
-//    }
-}
 
+        glDrawElementsBaseVertex(GL_TRIANGLES,
+                                 m_Entries[i].NumIndices,
+                                 GL_UNSIGNED_INT,
+                                 (void*)(sizeof(unsigned int) * m_Entries[i].BaseIndex),
+                                 m_Entries[i].BaseVertex);
+    }
+
+    // Make sure the VAO is not changed from the outside
+    glBindVertexArray(0);
+    glUseProgram(0);
+}
 

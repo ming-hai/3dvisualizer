@@ -34,10 +34,16 @@
 #include <assimp/postprocess.h>
 
 #include "math_3d.h"
-#include "shaderdata.h"
+#include "shader.h"
 #include "texture.h"
+#include "viewport.h"
 
 #define INVALID_MATERIAL 0xFFFFFFFF
+
+#define ZERO_MEM(a) memset(a, 0, sizeof(a))
+#define GLCheckError() (glGetError() == GL_NO_ERROR)
+#define SAFE_DELETE(p) if (p) { delete p; p = NULL; }
+#define ARRAY_SIZE_IN_ELEMENTS(a) (sizeof(a)/sizeof(a[0]))
 
 class SceneViewer;
 
@@ -62,8 +68,6 @@ enum ModelVBOs
     POSITIONS_VB,
     NORMALS_VB,
     TEXTURES_VB,
-    TANGENTS_VB,
-    BINORMALS_VB,
     INDICES_VB,
     NUM_VBOS
 };
@@ -72,11 +76,9 @@ class SceneNode : public QObject
 {
     Q_OBJECT
 public:
-    SceneNode(SceneViewer *sv, QObject *parent = 0);
+    SceneNode(ViewPort *view, QObject *parent = 0);
 
     ~SceneNode();
-
-    SceneViewer* m_sv;
 
     /*****************************************************************************
      * Node ID
@@ -110,7 +112,6 @@ protected:
 public:
     bool loadModel(QString path);
     bool loadModelFromBuffer(QString buffer);
-    bool setShader(ShaderData* shader);
 
     float getScale();
 
@@ -136,18 +137,15 @@ public:
 
     quint32 getSize();
 
-    ShaderData *getShader();
+    void setShader(Shader *sh);
+    Shader *getShader();
 
-    void bind();
-
-    void render();
-    void render(enum DrawingPass pass);
+    void render(bool applyMaterials = true);
 
 private:
     bool initFromScene(const aiScene* pScene);
     void initMesh(const aiMesh* paiMesh);
     bool initMaterials(const aiScene* pScene);
-    void generateTangents();
     void clear();
 
     bool m_useVertexArrays;
@@ -161,11 +159,9 @@ private:
     std::vector<Vector3f> m_Positions;
     std::vector<Vector3f> m_Normals;
     std::vector<Vector2f> m_TexCoords;
-    std::vector<Vector3f> m_Tangents;
-    std::vector<Vector3f> m_BiNormals;
     std::vector<unsigned int> m_Indices;
 
-    QList<UniformInsert*> m_uniformInserts;
+    //QList<UniformInsert*> m_uniformInserts;
 
     struct MeshEntry {
         MeshEntry()
@@ -189,8 +185,14 @@ private:
     Vector3f m_nodePosition, m_nodeRotation;
 
     QString m_modelBaseDirectory;
-    //MaterialData* m_material;
-    ShaderData *m_shader;
+
+    Shader *m_shader;
+    ViewPort *m_view; // used for world matrix insertion
+
+    GLuint m_modelRotMatrixLoc;
+    GLuint m_modelTransMatrixLoc;
+    GLuint m_worldMatrixLoc;
+    GLuint m_textUniLoc;
 
 signals:
     void changed(quint32 id);

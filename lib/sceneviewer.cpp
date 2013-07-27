@@ -19,18 +19,21 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#include "sceneviewer.h"
-
 #include <QDebug>
 #include <QMessageBox>
 #include <QtGui>
+
+#include "sceneviewer.h"
 
 SceneViewer::SceneViewer(QWidget *parent)
     : QGLWidget(parent)
 {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
-    m_textureUnitCount = 0;
+    m_modelsShader = NULL;
+    m_viewPort = NULL;
+    m_scale = 0.0f;
+    m_debugBuffers = false;
 }
 
 SceneViewer::~SceneViewer()
@@ -61,14 +64,15 @@ quint32 SceneViewer::addNode(QString path, quint32 id)
     }
     else
     {
-        SceneNode *node = new SceneNode(this);
+        SceneNode *node = new SceneNode(m_viewPort);
+        if (m_modelsShader != NULL)
+            node->setShader(m_modelsShader);
         // Load the model from the given path
         if (node->loadModel(path) == false)
         {
             delete node;
             return SceneNode::invalidId();
         }
-        node->setShader(m_sceneShader);
 
         m_nodes[id] = node;
         node->setID(id);
@@ -111,31 +115,11 @@ QList <SceneNode*> SceneViewer::nodes() const
 
 void SceneViewer::wheelEvent(QWheelEvent *event)
 {
-    m_view.setZ(m_view.getZ() + event->delta() / 100);
+    Q_UNUSED(event)
+    m_viewPort->setZ(m_viewPort->getZ() + event->delta() / 100);
     repaint();
 }
 
-int SceneViewer::getTextureUnitCount()
-{
-    return m_textureUnitCount;
-}
-
-void SceneViewer::increaseTextureUnitCount()
-{
-    m_textureUnitCount++;
-}
-
-BufferSet *SceneViewer::getBufferSet()
-{
-    return mainBufferSet;
-}
-
-void SceneViewer::loadShaders()
-{
-    m_normalsShader = ShaderData::FromPlainText("normal");
-    m_sceneShader = ShaderData::FromPlainText("scenepass");
-    m_planeShader = ShaderData::FromPlainText("plane");
-}
 
 // ********************************* OPENGL reimplemented methods *********************************
 
@@ -143,90 +127,72 @@ void SceneViewer::initializeGL()
 {
     qDebug() << Q_FUNC_INFO;
 
-    int argc = 0;
-    glutInit(&argc, NULL);
-    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
+    //int argc = 0;
+    //glutInit(&argc, NULL);
+    //glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
 
     qDebug() << "Vendor: " << QString((const char *)glGetString (GL_VENDOR));
     qDebug() << "Renderer: " << QString((const char *)glGetString (GL_RENDERER));
     qDebug() << "Version: " << QString((const char *)glGetString (GL_VERSION));
     qDebug() << "GLSL: " << QString((const char *)glGetString (GL_SHADING_LANGUAGE_VERSION));
 
+    glDisable(GL_LIGHTING);
+    glEnable(GL_TEXTURE_2D);
+    glShadeModel(GL_SMOOTH);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
+    //glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+
     //glewExperimental = GL_TRUE;
-    GLenum res = glewInit();
-    if (res != GLEW_OK)
-    {
-        qDebug() <<  "Error: " << glewGetErrorString(res);
+    GLenum err = glewInit();
+    if (GLEW_OK != err)
         return;
-    }
 
-    // Initialize Renderbuffers
-    mainBufferSet = new BufferSet();
-    mainBufferSet->EnableSsao = true;
-    mainBufferSet->EnableBloom = false;
-    mainBufferSet->m_width = width();
-    mainBufferSet->m_height = height();
-    mainBufferSet->initialize();
+    m_width = width();
+    m_height = height();
 
-    // load shaders
-    loadShaders();
+    m_modelsShader = new Shader("shaders/deferredShading.vert", "shaders/deferredShading.frag");
 
-    // create scene filters
-    m_normalsFilter = new SceneFilter(this);
-    m_normalsFilter->setShader(m_normalsShader);
-    m_normalsFilter->addFBTexture(TexNormal, "NormalColor");
-
-    m_planeFilter = new SceneFilter(this);
-    m_planeFilter->setShader(m_planeShader);
-    m_planeFilter->addFBTexture(TexDiffuse, "Scene");
-
-    // Create 2D filter
-    m_filter2D = new Filter2D(this);
-
-    // Setup View
-    m_view.bind();
+    m_viewPort = new ViewPort();
+    m_multipleRenderTarget = new FBORenderTexture(m_width, m_height);
+    m_deferredRendering = new DeferredRendering(m_width, m_height, m_multipleRenderTarget, m_viewPort);
 }
 
 void SceneViewer::resizeGL(int width, int height)
 {
     //qDebug() << Q_FUNC_INFO;
-    glViewport(0, 0, width, height);
-    mainBufferSet->m_width = width;
-    mainBufferSet->m_height = height;
-    mainBufferSet->OutBuffer->setSize(width, height);
-    mainBufferSet->initialize();
+    m_width = width;
+    m_height = height;
+    m_multipleRenderTarget->setSize(m_width, m_height);
+
+    glViewport(0, 0, m_width, m_height);
 }
 
 void SceneViewer::paintGL()
 {
-
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    //glClearColor(0.2f, 0.3f, 0.8f, 1.0f);
 
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
-    glDepthMask(GL_TRUE);
-    glDepthFunc(GL_LEQUAL);
-
-    m_textureUnitCount = 0;
-
-    //Draw normals pass
-    mainBufferSet->NormalPass.Bind(true);
-    glEnable(GL_DEPTH_TEST);
-    glDisable(GL_BLEND);
+    // Render our geometry into the FBO
+    m_multipleRenderTarget->start();
     foreach(SceneNode *sn, nodes())
-    {
-        sn->setShader(m_normalsShader);
         sn->render();
-    }
-    m_filter2D->Draw(m_normalsFilter);
+    m_multipleRenderTarget->stop();
 
-    mainBufferSet->ScenePass.Bind(true);
-    foreach(SceneNode *sn, nodes())
+    // Render to the screen
+    if(m_debugBuffers == false)
     {
-        sn->setShader(m_sceneShader);
-        sn->render();
+        // Render to screen using the deferred rendering shader
+        m_deferredRendering->render();
     }
-    mainBufferSet->OutBuffer->Bind(false);
-    m_filter2D->Draw(m_planeFilter);
+    else
+    {
+        int halfWidth = width() / 2;
+        int halfHeight = height() / 2;
+        m_multipleRenderTarget->showTexture( 0, halfWidth, halfHeight, 0);
+        m_multipleRenderTarget->showTexture( 1, halfWidth, halfHeight, halfWidth);
+        m_multipleRenderTarget->showTexture( 2, halfWidth, halfHeight, 0, halfHeight);
+        //m_multipleRenderTarget->showTexture( 3, halfWidth, halfHeight, halfWidth, halfHeight);
+    }
 }
 

@@ -2,7 +2,7 @@
   Q Light Controller Plus
   viewport.h
 
-  Copyright (C) Phillip Schulz-Theißen, Massimo Callegari
+  Copyright (C) Massimo Callegari
 
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License
@@ -28,8 +28,8 @@ class ViewPort
 {
 public:
     ViewPort();
-    void bind();
-    static void insertViewProjectionMatrix();
+
+    Matrix4f projectionMatrix();
 
     void setZ(float z);
     float getZ();

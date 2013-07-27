@@ -1,8 +1,8 @@
 /*
   Q Light Controller Plus
-  texturedata.h
+  texture.h
 
-  Copyright (C) Phillip Schulz-Theißen, Massimo Callegari
+  Copyright (C) Massimo Callegari
 
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License
@@ -19,14 +19,13 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#ifndef TEXTUREDATA_H
-#define TEXTUREDATA_H
+#ifndef TEXTURE_H
+#define TEXTURE_H
 
 #include <QObject>
 #include <QString>
 #include <QColor>
-
-#include "shaderdata.h"
+#include <GL/glew.h>
 
 #define GLUINT_MAX (GLuint)(1 << 31)
 
@@ -36,21 +35,19 @@ class Texture : public QObject
 {
     Q_OBJECT
 public:
-    Texture(SceneViewer* sv, ShaderData *shader, QObject *parent = 0);
+    Texture(GLenum TextureTarget, QObject *parent = 0);
     ~Texture();
 
-    void initData();
+    void init();
     bool loadMaterial(QColor color);
     bool loadTexture(QString path);
 
-    Texture* SetTarget(enum Uniforms);
-    virtual void bind(void);
+    virtual void bind(GLenum TextureUnit);
 
 private:
     SceneViewer *m_sv;
-    ShaderData *m_shader;
 
-    enum Uniforms Target;
+    GLenum m_textureTarget;
     QString Name;
     GLuint textureId;
 };

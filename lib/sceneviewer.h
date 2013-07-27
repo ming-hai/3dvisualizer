@@ -27,10 +27,9 @@
 
 #include <QGLWidget>
 
-#include "framebufferdata.h"
-#include "scenefilter.h"
+#include "deferredrendering.h"
+#include "fborendertexture.h"
 #include "scenenode.h"
-#include "filter2D.h"
 #include "viewport.h"
 
 class SceneViewer : public QGLWidget
@@ -105,47 +104,22 @@ protected:
     /** @reimp */
     void wheelEvent(QWheelEvent *event);
 
-    /*********************************************************************
-     * Textures counter
-     *********************************************************************/
-public:
-    int getTextureUnitCount();
-
-    void increaseTextureUnitCount();
-
-    BufferSet* getBufferSet();
-
-    /*********************************************************************
-     * Shaders
-     *********************************************************************/
-public:
-    void loadShaders();
-
 private:
-    ShaderData* m_normalsShader;
-    ShaderData* m_sceneShader;
-    ShaderData* m_planeShader;
+    float m_scale;
+    bool m_debugBuffers;
 
-    /*********************************************************************
-     * Scene filters
-     *********************************************************************/
-private:
-    SceneFilter *m_planeFilter;
-    SceneFilter *m_normalsFilter;
+    int m_width, m_height;
 
-    BufferSet* mainBufferSet;
-    Filter2D* m_filter2D;
-
-    int m_textureUnitCount;
-
-    GLuint m_sceneList;
-
-    ViewPort m_view;
+    Shader *m_modelsShader; // common shader for all the models
+    ViewPort *m_viewPort;
+    DeferredRendering*	m_deferredRendering;
+    FBORenderTexture*	m_multipleRenderTarget;
 
 signals:
     void nodeChanged(quint32 id);
     
 public slots:
+
     
 };
 
