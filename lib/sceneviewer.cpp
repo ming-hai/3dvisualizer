@@ -143,6 +143,8 @@ void SceneViewer::initializeGL()
     glDepthFunc(GL_LEQUAL);
     //glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
+    glEnable(GL_CULL_FACE);
+
     //glewExperimental = GL_TRUE;
     GLenum err = glewInit();
     if (GLEW_OK != err)
@@ -154,8 +156,7 @@ void SceneViewer::initializeGL()
     m_modelsShader = new Shader("shaders/deferredShading.vert", "shaders/deferredShading.frag");
 
     m_viewPort = new ViewPort();
-    m_multipleRenderTarget = new FBORenderTexture(m_width, m_height);
-    m_deferredRendering = new DeferredRendering(m_width, m_height, m_multipleRenderTarget, m_viewPort);
+    m_deferredRendering = new DeferredRendering(m_width, m_height, m_viewPort);
 }
 
 void SceneViewer::resizeGL(int width, int height)
@@ -163,7 +164,7 @@ void SceneViewer::resizeGL(int width, int height)
     //qDebug() << Q_FUNC_INFO;
     m_width = width;
     m_height = height;
-    m_multipleRenderTarget->setSize(m_width, m_height);
+    m_deferredRendering->setSize(m_width, m_height);
 
     glViewport(0, 0, m_width, m_height);
 }
@@ -173,26 +174,43 @@ void SceneViewer::paintGL()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     //glClearColor(0.2f, 0.3f, 0.8f, 1.0f);
 
-    // Render our geometry into the FBO
-    m_multipleRenderTarget->start();
+    // Render the shadow map
+    m_deferredRendering->startRenderToShadowMap();
     foreach(SceneNode *sn, nodes())
         sn->render();
-    m_multipleRenderTarget->stop();
+    m_deferredRendering->stopRenderToShadowMap();
+
+    // We then save out the matrices and send them to the deferred rendering, so when it comes to do the deferred pass
+    // it can project the pixel it's rendering to the light and see if it's in shadows
+    float worldToLightViewMatrix[16];
+    float lightViewToProjectionMatrix[16];
+    glGetFloatv(GL_MODELVIEW_MATRIX, worldToLightViewMatrix);
+    glGetFloatv(GL_PROJECTION_MATRIX, lightViewToProjectionMatrix);
+
+    float worldToCameraViewMatrix[16];
+    glGetFloatv(GL_MODELVIEW_MATRIX, worldToCameraViewMatrix);
+
+    // Render our geometry into the FBO
+    m_deferredRendering->startRenderToFBO();
+    foreach(SceneNode *sn, nodes())
+        sn->render();
+    m_deferredRendering->stopRenderToFBO();
 
     // Render to the screen
     if(m_debugBuffers == false)
     {
         // Render to screen using the deferred rendering shader
+        m_deferredRendering->setLightMatrices(worldToLightViewMatrix, lightViewToProjectionMatrix, worldToCameraViewMatrix);
         m_deferredRendering->render();
     }
     else
     {
         int halfWidth = width() / 2;
         int halfHeight = height() / 2;
-        m_multipleRenderTarget->showTexture( 0, halfWidth, halfHeight, 0);
-        m_multipleRenderTarget->showTexture( 1, halfWidth, halfHeight, halfWidth);
-        m_multipleRenderTarget->showTexture( 2, halfWidth, halfHeight, 0, halfHeight);
-        //m_multipleRenderTarget->showTexture( 3, halfWidth, halfHeight, halfWidth, halfHeight);
+        m_deferredRendering->showTexture( 0, halfWidth, halfHeight, 0);
+        m_deferredRendering->showTexture( 1, halfWidth, halfHeight, halfWidth);
+        m_deferredRendering->showTexture( 2, halfWidth, halfHeight, 0, halfHeight);
+        m_deferredRendering->showShadowMap(  halfWidth, halfHeight, halfWidth, halfHeight);
     }
 }
 

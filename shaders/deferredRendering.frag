@@ -5,7 +5,12 @@ in  vec2 vTexCoord;
 uniform sampler2D tDiffuse; 
 uniform sampler2D tPosition;
 uniform sampler2D tNormals;
+uniform sampler2D tShadowMap;
 uniform vec3 cameraPosition;
+
+uniform mat4 worldToLightViewMatrix;
+uniform mat4 lightViewToProjectionMatrix;
+uniform mat4 worldToCameraViewMatrix;
 
 void main( void )
 {
@@ -16,7 +21,7 @@ void main( void )
   vec4 position = texture2D( tPosition, vTexCoord );
   vec4 normal = texture2D( tNormals, vTexCoord );
 
-  vec3 light = vec3(50,100,50);
+  vec3 light = vec3(50, 50, 50);
   vec3 lightDir = light - position.xyz ;
 
   normal = normalize(normal);

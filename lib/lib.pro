@@ -39,7 +39,8 @@ HEADERS += visualizer3d.h \
     math_3d.h \
     viewport.h \
     deferredrendering.h \
-    fborendertexture.h
+    fborendertexture.h \
+    depthrendertexture.h
 
 SOURCES += visualizer3d.cpp \
     sceneviewer.cpp \
@@ -50,7 +51,8 @@ SOURCES += visualizer3d.cpp \
     math_3d.cpp \
     viewport.cpp \
     deferredrendering.cpp \
-    fborendertexture.cpp
+    fborendertexture.cpp \
+    depthrendertexture.cpp
 
 FORMS += objectseditor.ui
 

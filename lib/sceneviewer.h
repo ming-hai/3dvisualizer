@@ -113,7 +113,6 @@ private:
     Shader *m_modelsShader; // common shader for all the models
     ViewPort *m_viewPort;
     DeferredRendering*	m_deferredRendering;
-    FBORenderTexture*	m_multipleRenderTarget;
 
 signals:
     void nodeChanged(quint32 id);
