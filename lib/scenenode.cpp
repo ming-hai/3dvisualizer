@@ -263,8 +263,7 @@ void SceneNode::setShader(Shader *sh)
         glBindAttribLocation(m_shader->m_shaderProg, TEX_COORD_LOCATION, "in_TexCoord");
         glLinkProgram(m_shader->m_shaderProg);
 
-        m_modelRotMatrixLoc = glGetUniformLocation(m_shader->m_shaderProg, "ModelRotationMatrix");
-        m_modelTransMatrixLoc = glGetUniformLocation(m_shader->m_shaderProg, "ModelTranslationMatrix");
+        m_modelMatrixLoc = glGetUniformLocation(m_shader->m_shaderProg, "ModelMatrix");
         m_worldMatrixLoc = glGetUniformLocation(m_shader->m_shaderProg, "WorldMatrix");
         m_textUniLoc = glGetUniformLocation(m_shader->m_shaderProg, "tDiffuse");
         glUseProgram(0);
@@ -458,8 +457,9 @@ void SceneNode::render(bool applyMaterials)
 
     glBindVertexArray(m_VAO);
 
-    glUniformMatrix4fv ( m_modelRotMatrixLoc, 1, GL_TRUE, (const GLfloat*)m_rotationMatrix.m_matrix);
-    glUniformMatrix4fv ( m_modelTransMatrixLoc, 1, GL_TRUE, (const GLfloat*)m_translationMatrix.m_matrix);
+    Matrix4f modelMatrix = m_rotationMatrix * m_translationMatrix;
+
+    glUniformMatrix4fv ( m_modelMatrixLoc, 1, GL_TRUE, (const GLfloat*)modelMatrix.m_matrix);
 
     Matrix4f worldMatrix = m_view->projectionMatrix();
     glUniformMatrix4fv ( m_worldMatrixLoc, 1, GL_TRUE, (const GLfloat*)worldMatrix.m_matrix);

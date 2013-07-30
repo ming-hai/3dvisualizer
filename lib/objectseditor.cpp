@@ -55,7 +55,7 @@ void ObjectsEditor::slotAddModel()
     dialog.setAcceptMode(QFileDialog::AcceptOpen);
 
     //QString modelsDir = QDir::toNativeSeperators(QDir::homePath());
-    QString filter = tr("All 3D Models (*.3ds *.obj *.dae *.blend *.x *.lwo *.lws *.ac)");
+    QString filter = tr("All 3D Models (*.3ds *.obj *.dae *.blend *.x *.lwo *.lws *.ac *.ply)");
 
     dialog.setFilter(filter);
 

@@ -8,8 +8,7 @@ varying vec3 normals;
 varying vec4 position;
 varying vec2 vTexCoord;
 
-uniform mat4 ModelRotationMatrix;
-uniform mat4 ModelTranslationMatrix;
+uniform mat4 ModelMatrix;
 uniform mat4 WorldMatrix;
 
 void main( void )
@@ -23,7 +22,7 @@ void main( void )
   //position       = gl_ModelViewMatrix * gl_Vertex;
   vTexCoord      = in_TexCoord;
   normals        = normalize(in_Normal);
-  position       = WorldMatrix * ModelRotationMatrix * ModelTranslationMatrix * vec4(in_Position, 1.0);
+  position       = WorldMatrix * ModelMatrix * vec4(in_Position, 1.0);
   gl_Position    = position;
   gl_FrontColor  = vec4(1.0, 1.0, 1.0, 1.0);
 }

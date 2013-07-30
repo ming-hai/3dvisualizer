@@ -434,6 +434,7 @@ public:
     void InitTranslationTransform(float x, float y, float z);
     void InitCameraTransform(const Vector3f& Target, const Vector3f& Up);
     void InitPersProjTransform(const PersProjInfo& p);
+    void InitOrthoTransform(float left, float right, float bottom, float top, float near, float far);
 };
 
 

@@ -189,8 +189,7 @@ private:
     Shader *m_shader;
     ViewPort *m_view; // used for world matrix insertion
 
-    GLuint m_modelRotMatrixLoc;
-    GLuint m_modelTransMatrixLoc;
+    GLuint m_modelMatrixLoc;
     GLuint m_worldMatrixLoc;
     GLuint m_textUniLoc;
 

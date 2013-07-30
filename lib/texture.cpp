@@ -69,7 +69,7 @@ bool Texture::loadTexture(QString path)
 
 void Texture::bind(GLenum TextureUnit)
 {
-    qDebug() << "Bind texture ID:" << textureId;
+    //qDebug() << "Bind texture ID:" << textureId;
     glActiveTexture(TextureUnit);
     glBindTexture(m_textureTarget, textureId);
 }

@@ -58,6 +58,7 @@ void ViewPort::setProjectionMatrix()
     Vector3f fromCenter = Vector3f(m_Xpos, m_Ypos, m_Zpos);
 
     projection.InitPersProjTransform(info);
+    //projection.InitOrthoTransform(-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f);
 
     translation.InitTranslationTransform(fromCenter.x,fromCenter.y,fromCenter.z);
 

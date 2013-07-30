@@ -174,6 +174,7 @@ void SceneViewer::paintGL()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     //glClearColor(0.2f, 0.3f, 0.8f, 1.0f);
 
+
     // Render the shadow map
     m_deferredRendering->startRenderToShadowMap();
     foreach(SceneNode *sn, nodes())

@@ -143,6 +143,37 @@ void Matrix4f::InitPersProjTransform(const PersProjInfo& p)
     m_matrix[3][3] = 0.0;
 }
 
+/**
+ * Outputs a matrix that creates parallel projection.
+ */
+void Matrix4f::InitOrthoTransform(float left, float right, float bottom, float top, float near, float far)
+{
+    // Reference: http://www.c3dl.org/
+    float tx = (left + right) / (left - right);
+    float ty = (top + bottom) / (top - bottom);
+    float tz = (far + near) / (far - near);
+
+    m_matrix[0][0] = 2.0f / (left - right);
+    m_matrix[0][1] = 0.0f;
+    m_matrix[0][2] = 0.0f;
+    m_matrix[0][3] = 0.0f;
+
+    m_matrix[1][0] = 0.0f;
+    m_matrix[1][1] = 2.0f / (top - bottom);
+    m_matrix[1][2] = 0.0f;
+    m_matrix[1][3] = 0.0f;
+
+    m_matrix[2][0] = 0.0f;
+    m_matrix[2][1] = 0.0f;
+    m_matrix[2][2] = -2.0f / (far - near);
+    m_matrix[2][3] = 0.0f;
+
+    m_matrix[3][0] = tx;
+    m_matrix[3][1] = ty;
+    m_matrix[3][2] = tz;
+    m_matrix[3][3] = 1.0f;
+}
+
 
 Quaternion::Quaternion(float _x, float _y, float _z, float _w)
 {
