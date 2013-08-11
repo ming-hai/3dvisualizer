@@ -14,14 +14,11 @@ uniform mat4 worldToCameraViewMatrix;
 
 void main( void )
 {
-  //vec4 image = texture2D( tDiffuse, gl_TexCoord[0].xy );
-  //vec4 position = texture2D( tPosition, gl_TexCoord[0].xy );
-  //vec4 normal = texture2D( tNormals, gl_TexCoord[0].xy );
   vec4 image = texture2D( tDiffuse, vTexCoord );
   vec4 position = texture2D( tPosition, vTexCoord );
   vec4 normal = texture2D( tNormals, vTexCoord );
 
-  vec3 light = vec3(50, 100, 100);
+  vec3 light = vec3(50, 100, -10);
   vec3 lightDir = light - position.xyz;
 
   normal = normalize(normal);

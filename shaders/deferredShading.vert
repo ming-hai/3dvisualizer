@@ -21,8 +21,8 @@ void main( void )
   //normals        = normalize(worldRotationInverse * gl_NormalMatrix * gl_Normal);
   //position       = gl_ModelViewMatrix * gl_Vertex;
   vTexCoord      = in_TexCoord;
-  normals        = normalize(in_Normal);
+  normals        = normalize(worldRotationInverse * gl_NormalMatrix * in_Normal);
   position       = WorldMatrix * ModelMatrix * vec4(in_Position, 1.0);
   gl_Position    = position;
-  gl_FrontColor  = vec4(1.0, 1.0, 1.0, 1.0);
+  //gl_FrontColor  = vec4(1.0, 1.0, 1.0, 1.0);
 }

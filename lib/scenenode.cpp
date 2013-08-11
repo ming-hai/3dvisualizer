@@ -23,7 +23,6 @@
 #include "scenenode.h"
 
 #include <QDebug>
-#include <QDir>
 
 #define aisgl_min(x,y) (x<y?x:y)
 #define aisgl_max(x,y) (y>x?y:x)
@@ -52,6 +51,8 @@ SceneNode::SceneNode(ViewPort *view, QObject *parent)
     m_modelBaseDirectory = "";
 
     m_shader = NULL;
+
+    m_emitLight = false;
 }
 
 SceneNode::~SceneNode()

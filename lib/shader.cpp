@@ -1,9 +1,12 @@
 #include "GL/glew.h"
 #include "shader.h"
 
+#include <QDir>
 #include <QDebug>
 #include <QFile>
 #include <QTextStream>
+
+#define SHADERS_FOLDER "shaders"
 
 QString Shader::fileToBuffer(QString filename)
 {
@@ -26,8 +29,8 @@ Shader::Shader(QString _sVSFileName, QString _sFSFileName)
 	: m_VSFileName(_sVSFileName)
 	, m_FSFileName(_sFSFileName)
 {
-    QString vertexBuf = fileToBuffer(_sVSFileName);
-    QString fragmentBuf = fileToBuffer(_sFSFileName);
+    QString vertexBuf = fileToBuffer(QString(SHADERS_FOLDER) + QDir::separator() + _sVSFileName);
+    QString fragmentBuf = fileToBuffer(QString(SHADERS_FOLDER) + QDir::separator() + _sFSFileName);
 
     //qDebug() << "VERTEX SHADER: " << vertexBuf;
     //qDebug() << "FRAGMENT SHADER: " << fragmentBuf;
@@ -71,7 +74,7 @@ Shader::Shader(QString _sVSFileName, QString _sFSFileName)
     }
     else
     {
-        qDebug() << "Vertex Shader compiled Successfully";
+        qDebug() << _sVSFileName << "compiled successfully";
     }
 
     /* Create an empty fragment shader handle */
@@ -104,7 +107,7 @@ Shader::Shader(QString _sVSFileName, QString _sFSFileName)
     }
     else
     {
-        qDebug() << "Fragment Shader compiled successfully";
+        qDebug() << _sFSFileName << "compiled successfully";
     }
 
     /* Assign our program handle a "name" */

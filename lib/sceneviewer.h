@@ -29,6 +29,7 @@
 
 #include "deferredrendering.h"
 #include "fborendertexture.h"
+#include "staticspotlight.h"
 #include "scenenode.h"
 #include "viewport.h"
 
@@ -61,6 +62,8 @@ public:
      */
     quint32 addNode(QString path, quint32 id = SceneNode::invalidId());
 
+    quint32 addSpotlight(quint32 id = SceneNode::invalidId());
+
     /**
      * Delete the given node instance from SceneViewer
      *
@@ -81,11 +84,17 @@ public:
     QList <SceneNode*> nodes() const;
 
 protected:
-    /** Nodes map */
+    /** Nodes map paired by unique IDs */
     QMap <quint32,SceneNode*> m_nodes;
 
     /** Latest assigned node ID */
     quint32 m_latestNodeId;
+
+    /*********************************************************************
+     * Lights
+     *********************************************************************/
+    /** Lights map paired by unique IDs */
+    QMap <quint32, Spotlight*>m_sceneLights;
 
     /*********************************************************************
      * OpenGL

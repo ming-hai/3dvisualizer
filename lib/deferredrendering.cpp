@@ -26,7 +26,7 @@
 *	Create the deferred rendering object. I have hardcoded the shader's name here.
 */
 DeferredRendering::DeferredRendering(int _dWidth, int _dHeight, ViewPort *view)
-    : m_shader("shaders/deferredRendering.vert", "shaders/deferredRendering.frag")
+    : m_shader("deferredRendering.vert", "deferredRendering.frag")
     , m_fboRenderTexture(_dWidth, _dHeight)
     , m_shadowMap(1024, 1024)
     , m_view(view)
@@ -72,14 +72,21 @@ void DeferredRendering::setSize(int w, int h)
     m_shadowMap.setSize(w, h);
 }
 
+FBORenderTexture *DeferredRendering::getFBO()
+{
+    return &m_fboRenderTexture;
+}
+
 /**
 *	Acquire the light matrices
 */
-void DeferredRendering::setLightMatrices(float worldToLightViewMatrix[16], float lightViewToProjectionMatrix[16], float worldToCameraViewMatrix[16])
+void DeferredRendering::setLightMatrices(Matrix4f worldToLightViewMatrix,
+                                         Matrix4f lightViewToProjectionMatrix,
+                                         Matrix4f worldToCameraViewMatrix)
 {
-    memcpy(m_worldToLightViewMatrix, worldToLightViewMatrix, sizeof(float) * 16);
-    memcpy(m_lightViewToProjectionMatrix, lightViewToProjectionMatrix, sizeof(float) * 16);
-    memcpy(m_worldToCameraViewMatrix, worldToCameraViewMatrix, sizeof(float) * 16);
+    m_worldToLightViewMatrix = worldToLightViewMatrix;
+    m_lightViewToProjectionMatrix = lightViewToProjectionMatrix;
+    m_worldToCameraViewMatrix = worldToCameraViewMatrix;
 }
 
 /**
@@ -157,10 +164,12 @@ void DeferredRendering::render()
     glBindTexture(GL_TEXTURE_2D, m_shadowMap.getTexture());
     glUniform1iARB ( m_shadowMapLoc, 3 );
 
-    glUniformMatrix4fv ( m_worldToCameraViewMatrixLoc, 1, GL_FALSE, m_worldToCameraViewMatrix );
-    glUniformMatrix4fv ( m_lightViewToProjectionMatrixLoc, 1, GL_FALSE, m_lightViewToProjectionMatrix );
-    glUniformMatrix4fv ( m_worldToLightViewMatrixLoc, 1, GL_FALSE, m_worldToLightViewMatrix );
-
+    glUniformMatrix4fv ( m_worldToCameraViewMatrixLoc, 1, GL_FALSE,
+                         (const GLfloat*)m_worldToCameraViewMatrix.m_matrix );
+    glUniformMatrix4fv ( m_lightViewToProjectionMatrixLoc, 1, GL_FALSE,
+                         (const GLfloat*)m_lightViewToProjectionMatrix.m_matrix );
+    glUniformMatrix4fv ( m_worldToLightViewMatrixLoc, 1, GL_FALSE,
+                         (const GLfloat*)m_worldToLightViewMatrix.m_matrix );
 
 	// Render the quad
     m_screenQuad->render(false);

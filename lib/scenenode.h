@@ -24,6 +24,7 @@
 
 #include <QObject>
 #include <vector>
+#include <QDir>
 
 #include "GL/glew.h"
 #include "GL/glut.h"
@@ -45,7 +46,7 @@
 #define SAFE_DELETE(p) if (p) { delete p; p = NULL; }
 #define ARRAY_SIZE_IN_ELEMENTS(a) (sizeof(a)/sizeof(a[0]))
 
-class SceneViewer;
+#define MODELS_FOLDER "models"
 
 struct Vertex
 {
@@ -142,13 +143,14 @@ public:
 
     void render(bool applyMaterials = true);
 
+protected:
+    bool m_emitLight;
+
 private:
     bool initFromScene(const aiScene* pScene);
     void initMesh(const aiMesh* paiMesh);
     bool initMaterials(const aiScene* pScene);
     void clear();
-
-    bool m_useVertexArrays;
 
     GLuint m_VAO;
     GLuint m_VBO[NUM_VBOS];
@@ -161,9 +163,8 @@ private:
     std::vector<Vector2f> m_TexCoords;
     std::vector<unsigned int> m_Indices;
 
-    //QList<UniformInsert*> m_uniformInserts;
-
-    struct MeshEntry {
+    struct MeshEntry
+    {
         MeshEntry()
         {
             NumIndices = 0;

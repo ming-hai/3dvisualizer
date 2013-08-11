@@ -41,6 +41,7 @@ signals:
 
 public slots:
     void slotAddModel();
+    void slotAddSpotlight();
     void slotDeleteModel();
     void slotObjectSelected(QTreeWidgetItem *item, int);
 

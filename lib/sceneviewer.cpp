@@ -83,6 +83,36 @@ quint32 SceneViewer::addNode(QString path, quint32 id)
     }
 }
 
+quint32 SceneViewer::addSpotlight(quint32 id)
+{
+    if (id == SceneNode::invalidId())
+        id = createNodeId();
+
+    if (m_nodes.contains(id) == true || id == SceneNode::invalidId())
+    {
+        qWarning() << Q_FUNC_INFO << "a node with ID" << id << "already exists!";
+        return SceneNode::invalidId();
+    }
+    else
+    {
+        StaticSpotlight *spotlight = new StaticSpotlight(m_viewPort);
+        if (m_modelsShader != NULL)
+            spotlight->setShader(m_modelsShader);
+
+        m_nodes[id] = spotlight;
+        spotlight->setID(id);
+
+        Spotlight *light = new Spotlight(m_viewPort, m_deferredRendering->getFBO());
+        spotlight->attachLight(light);
+        m_sceneLights[id] = light;
+
+        connect(spotlight, SIGNAL(changed(quint32)),
+                this, SIGNAL(nodeChanged(quint32)));
+
+        return id;
+    }
+}
+
 bool SceneViewer::deleteNode(quint32 id)
 {
     if (m_nodes.contains(id) == true)
@@ -127,10 +157,6 @@ void SceneViewer::initializeGL()
 {
     qDebug() << Q_FUNC_INFO;
 
-    //int argc = 0;
-    //glutInit(&argc, NULL);
-    //glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
-
     qDebug() << "Vendor: " << QString((const char *)glGetString (GL_VENDOR));
     qDebug() << "Renderer: " << QString((const char *)glGetString (GL_RENDERER));
     qDebug() << "Version: " << QString((const char *)glGetString (GL_VERSION));
@@ -141,9 +167,10 @@ void SceneViewer::initializeGL()
     glShadeModel(GL_SMOOTH);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
-    //glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
     glEnable(GL_CULL_FACE);
+    glBlendFunc(GL_ONE, GL_ONE);
 
     //glewExperimental = GL_TRUE;
     GLenum err = glewInit();
@@ -153,7 +180,7 @@ void SceneViewer::initializeGL()
     m_width = width();
     m_height = height();
 
-    m_modelsShader = new Shader("shaders/deferredShading.vert", "shaders/deferredShading.frag");
+    m_modelsShader = new Shader("deferredShading.vert", "deferredShading.frag");
 
     m_viewPort = new ViewPort();
     m_deferredRendering = new DeferredRendering(m_width, m_height, m_viewPort);
@@ -173,9 +200,8 @@ void SceneViewer::paintGL()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     //glClearColor(0.2f, 0.3f, 0.8f, 1.0f);
-
-
-    // Render the shadow map
+/*
+    // Pre-pass: Render shadow maps
     m_deferredRendering->startRenderToShadowMap();
     foreach(SceneNode *sn, nodes())
         sn->render();
@@ -190,18 +216,27 @@ void SceneViewer::paintGL()
 
     float worldToCameraViewMatrix[16];
     glGetFloatv(GL_MODELVIEW_MATRIX, worldToCameraViewMatrix);
+*/
 
-    // Render our geometry into the FBO
+    // Geometry pass: Render our geometry into the FBO
     m_deferredRendering->startRenderToFBO();
     foreach(SceneNode *sn, nodes())
         sn->render();
     m_deferredRendering->stopRenderToFBO();
 
-    // Render to the screen
     if(m_debugBuffers == false)
     {
-        // Render to screen using the deferred rendering shader
-        m_deferredRendering->setLightMatrices(worldToLightViewMatrix, lightViewToProjectionMatrix, worldToCameraViewMatrix);
+        // Light pass: render light contributions from all the objects emitting light
+        glEnable(GL_BLEND);
+        foreach(quint32 lid, m_sceneLights.keys())
+        {
+            Spotlight *light = m_sceneLights[lid];
+            light->render();
+        }
+        glDisable(GL_BLEND);
+
+        // Final pass: render the fullscreen textured quad
+        //m_deferredRendering->setLightMatrices(worldToLightViewMatrix, lightViewToProjectionMatrix, worldToCameraViewMatrix);
         m_deferredRendering->render();
     }
     else

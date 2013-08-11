@@ -40,7 +40,9 @@ HEADERS += visualizer3d.h \
     viewport.h \
     deferredrendering.h \
     fborendertexture.h \
-    depthrendertexture.h
+    depthrendertexture.h \
+    staticspotlight.h \
+    spotlight.h
 
 SOURCES += visualizer3d.cpp \
     sceneviewer.cpp \
@@ -52,7 +54,9 @@ SOURCES += visualizer3d.cpp \
     viewport.cpp \
     deferredrendering.cpp \
     fborendertexture.cpp \
-    depthrendertexture.cpp
+    depthrendertexture.cpp \
+    staticspotlight.cpp \
+    spotlight.cpp
 
 FORMS += objectseditor.ui
 

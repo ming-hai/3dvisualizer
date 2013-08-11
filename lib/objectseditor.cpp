@@ -82,6 +82,21 @@ void ObjectsEditor::slotAddModel()
     }
 }
 
+void ObjectsEditor::slotAddSpotlight()
+{
+    quint32 newID = m_scViewer->addSpotlight();
+    if (newID == SceneNode::invalidId())
+    {
+        QMessageBox::warning(this, tr("Unsupported 3D model"), tr("This 3D model cannot be loaded. Sorry."));
+    }
+    else
+    {
+        QTreeWidgetItem *item = new QTreeWidgetItem(m_objectsTree);
+        item->setText(KObjectsColumnName,  "Spotlight");
+        item->setText(KObjectsColumnID,  QString("%1").arg(newID));
+    }
+}
+
 void ObjectsEditor::slotDeleteModel()
 {
     if (m_objectsTree->selectedItems().count() > 0)

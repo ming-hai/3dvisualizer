@@ -79,6 +79,13 @@
       </layout>
      </item>
      <item>
+      <widget class="QToolButton" name="m_addSpotButton">
+       <property name="text">
+        <string>Add spotlight</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QTreeWidget" name="m_objectsTree">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -116,7 +123,7 @@
           <x>0</x>
           <y>0</y>
           <width>254</width>
-          <height>190</height>
+          <height>176</height>
          </rect>
         </property>
         <attribute name="label">
@@ -183,7 +190,7 @@
           <x>0</x>
           <y>0</y>
           <width>254</width>
-          <height>190</height>
+          <height>176</height>
          </rect>
         </property>
         <attribute name="label">
@@ -419,8 +426,8 @@
    <slot>slotYrotationChanged(double)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>170</x>
-     <y>495</y>
+     <x>227</x>
+     <y>522</y>
     </hint>
     <hint type="destinationlabel">
      <x>145</x>
@@ -435,12 +442,28 @@
    <slot>slotZrotationChanged(double)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>177</x>
-     <y>526</y>
+     <x>227</x>
+     <y>552</y>
     </hint>
     <hint type="destinationlabel">
      <x>137</x>
      <y>277</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>m_addSpotButton</sender>
+   <signal>clicked()</signal>
+   <receiver>ObjectsEditor</receiver>
+   <slot>slotAddSpotlight()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>32</x>
+     <y>51</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>92</x>
+     <y>556</y>
     </hint>
    </hints>
   </connection>
@@ -453,5 +476,6 @@
   <slot>slotXrotationChanged(double)</slot>
   <slot>slotYrotationChanged(double)</slot>
   <slot>slotZrotationChanged(double)</slot>
+  <slot>slotAddSpotlight()</slot>
  </slots>
 </ui>

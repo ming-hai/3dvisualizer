@@ -33,13 +33,15 @@
 class DeferredRendering
 {
 public:
-	// Ctors/Dtors
     DeferredRendering(int width, int height, ViewPort *view);
 
     void    setSize(int w, int h);
 
 	// Methods
-    void    setLightMatrices(float worldToLightViewMatrix[16], float lightViewToProjectionMatrix[16], float worldToCameraViewMatrix[16]);
+    FBORenderTexture *getFBO();
+    void    setLightMatrices(Matrix4f worldToLightViewMatrix,
+                             Matrix4f lightViewToProjectionMatrix,
+                             Matrix4f worldToCameraViewMatrix);
     void    startRenderToFBO();
     void    stopRenderToFBO();
     void    startRenderToShadowMap();
@@ -51,17 +53,17 @@ public:
 private:
 	// Variables
     Shader 		        m_shader; // Deferred rendering shader
-    FBORenderTexture    m_fboRenderTexture; // A pointer to the FBO render texture that contains diffuse, normals and positions
-    DepthRenderTexture  m_shadowMap; // A pointer to the FBO that renders the depth into the shadow map
-    ViewPort*           m_view;
-    SceneNode*          m_screenQuad;
+    FBORenderTexture    m_fboRenderTexture; // The FBO render texture that contains diffuse, normals and positions
+    DepthRenderTexture  m_shadowMap; // The FBO that renders the depth into the shadow map
+    ViewPort*           m_view; // Reference to the main viewport
+    SceneNode*          m_screenQuad; // Screen quad model reference
 
 	unsigned int		m_width; // width
 	unsigned int		m_height; // height
 
-    float               m_worldToLightViewMatrix[16]; // Matrix that takes a vector from World Space into Light View Space
-    float               m_lightViewToProjectionMatrix[16]; // Matrix that takes a vector from View Space into Projection Space (Clip Space)
-    float               m_worldToCameraViewMatrix[16]; // Matrix that takes a vector from World Space into Camera View Space
+    Matrix4f            m_worldToLightViewMatrix; // Matrix that takes a vector from World Space into Light View Space
+    Matrix4f            m_lightViewToProjectionMatrix; // Matrix that takes a vector from View Space into Projection Space (Clip Space)
+    Matrix4f            m_worldToCameraViewMatrix; // Matrix that takes a vector from World Space into Camera View Space
 
     GLuint				m_diffuseLoc; // Diffuse texture handle for the shader
     GLuint				m_positionLoc; // Position texture handle for the shader
