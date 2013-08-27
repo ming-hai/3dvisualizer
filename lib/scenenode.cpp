@@ -458,7 +458,7 @@ void SceneNode::render(bool applyMaterials)
 
     glBindVertexArray(m_VAO);
 
-    Matrix4f modelMatrix = m_rotationMatrix * m_translationMatrix;
+    Matrix4f modelMatrix = m_translationMatrix * m_rotationMatrix;
 
     glUniformMatrix4fv ( m_modelMatrixLoc, 1, GL_TRUE, (const GLfloat*)modelMatrix.m_matrix);
 
